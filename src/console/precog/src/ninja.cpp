@@ -405,8 +405,8 @@ using namespace fs;
             cxx << "/usr/bin/g++";
             (void)once;
           }else{
-            static auto once = e_msg( "Guessing g++ is in $PATH" );
-            cxx << "g++";
+            static auto once = e_msg( "Guessing clang++ is in PATH" );
+            cxx << "clang++";
             (void)once;
           }
           cxx << " $CXX_FLAGS $" << clabel << " ";
