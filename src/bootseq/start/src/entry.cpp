@@ -92,7 +92,7 @@ using namespace gfc;
           // Setup the abort hook; so I can redirect to the e_break() function.
           //--------------------------------------------------------------------
 
-          #if !e_compiling( microsoft )
+          #if e_compiling( osx )
             static const auto& onAbort=[]( int signum ){
               e_break( e_xfs( "ABORT: %d - Caught SIGABRT signal!", signum ));
             }; signal( SIGABRT, onAbort );
