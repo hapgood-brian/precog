@@ -393,19 +393,19 @@ using namespace fs;
             if( e_dexists( "~/emsdk" ) && e_fexists( "~/emsdk/upstream/emscripten/em++" )){
               cxx << "~/emsdk/upstream/emscripten/em++";
             }else{// TODO: Search around on our $PATH yeahs!
-              e_break( "Emscripten not found at ~/emsdk." );
+              e_break( " * Emscripten not found at ~/emsdk." );
               return;
             }
           }else if( e_fexists( "/usr/bin/clang++" )){
-            static auto once = e_msg( "Found clang++ at /usr/bin/" );
+            static auto once = e_msg( " * Found clang++ at /usr/bin/" );
             cxx << "/usr/bin/clang++";
             (void)once;
           }else if( e_fexists( "/usr/bin/g++" )){
-            static auto once = e_msg( "Found g++ at /usr/bin/" );
+            static auto once = e_msg( "  * Found g++ at /usr/bin/" );
             cxx << "/usr/bin/g++";
             (void)once;
           }else{
-            static auto once = e_msg( "Compiler not found!" );
+            static auto once = e_msg( "  * Compiler not found!" );
             cxx << "clang++";
             (void)once;
           }
