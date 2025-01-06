@@ -114,3 +114,10 @@ wsp:new'precog'
   : universal'true'
   : target'console'
   : lang'c++20'
+
+--------------------------------------------------------------------------------
+-- Generate and save all project files.
+--------------------------------------------------------------------------------
+
+local uuid=generate(wsp)
+save( uuid )

@@ -58,10 +58,6 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "ninja.x64"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
             argument = "xcode"
             isEnabled = "NO">
          </CommandLineArgument>
@@ -78,15 +74,15 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-oninja_x86_64"
+            argument = "-onina.arm64"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-oninja.x64"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--cross=x86_64,pc,linux,elf"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-?"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -95,3 +95,10 @@ wsp:new'precog'
   : prefix'src/core/include/eon/eon.h'
   : target'console'
   : lang'c++20'
+
+--------------------------------------------------------------------------------
+-- Generate and save all project files.
+--------------------------------------------------------------------------------
+
+local uuid=generate(wsp)
+save( uuid )
