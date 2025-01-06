@@ -1174,18 +1174,16 @@ using namespace fs;
   //onSave:{                                      |
 
     s32 onSave( lua_State* L ){
+      auto path = Workspace::out;
+      if( path.empty() )
+          path = "tmp";
       auto bResult = false;
 
       //------------------------------------------------------------------------
       // Bail conditions.
       //------------------------------------------------------------------------
 
-      const string& path = lua_tostring( L, -1 );
-      if( path.empty() ){
-        lua_pushboolean( L, false );
-        return 1;
-      }
-      const s64 UUID = lua_tointeger( L, -2 );
+      const s64 UUID = lua_tointeger( L, -1 );
       if( !Class::Factory::valid( UUID )){
         lua_pushboolean( L, false );
         return 1;
@@ -1197,6 +1195,7 @@ using namespace fs;
       }
       auto& wsp = hObject.as<Workspace>().cast();
       if( wsp.toName().empty() ){
+        e_msg( "No name in workspace object" );
         lua_pushboolean( L, false );
         return 1;
       }
