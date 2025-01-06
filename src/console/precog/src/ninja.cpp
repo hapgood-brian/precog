@@ -487,20 +487,31 @@ using namespace fs;
               e_break( "Emscripten not found at ~/emsdk." );
               return;
             }
-          }else if( e_fexists( "/usr/bin/clang" )){
-            static auto once = e_msg( "Found clang at /usr/bin/" );
-            c << "/usr/bin/clang";
-            (void)once;
-          }else if( e_fexists( "/usr/bin/gcc" )){
-            static auto once = e_msg( "Found gcc at /usr/bin/" );
-            c << "/usr/bin/gcc";
-            (void)once;
           }else{
-            e_break( "Compiler not found." );
-            return;
+            c << "clang $" << clabel << " -o $out -c $in\n";
           }
-          c << " $" << clabel << " -o $out -c $in\n";
         }
+
+        //----------------------------------------------------------------------
+        // Environmental checks (illegal on Linux).
+        //----------------------------------------------------------------------
+
+        #if 0 // This cannot run on linux without permissions or sudo.
+          if( e_fexists( "/usr/bin/clang" )){
+              static auto once = e_msg( "Found clang at /usr/bin/" );
+              c << "/usr/bin/clang";
+              (void)once;
+            }else if( e_fexists( "/usr/bin/gcc" )){
+              static auto once = e_msg( "Found gcc at /usr/bin/" );
+              c << "/usr/bin/gcc";
+              (void)once;
+            }else{
+              e_break( "Compiler not found." );
+              return;
+            }
+            c << " $" << clabel << " -o $out -c $in\n";
+          }
+        #endif
 
         //----------------------------------------------------------------------
         // Write C compilation rule string.
