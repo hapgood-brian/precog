@@ -629,13 +629,9 @@ using namespace fs;
               fs << cxx;
             }
             fs << "  command = $PRE_LINK && ";
-            if( bmp->bWasm ) // TODO: Check different locations with e_fexists.
-              fs << "~/emsdk/upstream/emscripten/emcc";
-            else if( e_fexists( "/usr/bin/clang++" ))
-              fs << "/usr/bin/clang++";
-            else if( e_fexists( "/usr/bin/g++" ))
-              fs << "/usr/bin/g++";
-            else e_break( "Compiler not found." );
+            if( bmp->bWasm )// TODO: Check different locations with e_fexists.
+                  fs << "~/emsdk/upstream/emscripten/emcc";
+            else fs << "clang";
             if( lstart != lflags )
               fs << " $" << llabel;
             if( bmp->bWasm ){
