@@ -248,10 +248,8 @@ using OnOK             = std::function<void()>;
 
         bool IEngine::fexists( const string& path ){
           struct stat statbuf;
-          if( !stat( path, &statbuf )){
-            if( !access( path, F_OK )){
-              return true;
-            }
+          if( !access( path, F_OK )){
+            return true;
           }
           return false;
         }
