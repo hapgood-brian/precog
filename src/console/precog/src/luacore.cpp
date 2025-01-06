@@ -186,6 +186,7 @@ extern s32 onSave( lua_State* L );
             e_break( e_xfs( "file not found: %s", filename ));
             return;
           }
+          e_msgf( "Requiring \"%s\"", ccp( filename ));
           lua_pushstring( L, filename );
              require( L );
           lua_pop( L, 1 );
@@ -201,13 +202,13 @@ extern s32 onSave( lua_State* L );
             #if 0 // This is just for reference on how to do it.
               switch( luaL_loadfile( L, filename )){
                 case LUA_ERRSYNTAX:
-                  e_logf( "Syntax error in %s", filename.c_str() );
+                  e_logf( "  Syntax error in %s", filename.c_str() );
                   break;
                 case LUA_ERRFILE:
-                  e_logf( "Couldn't find file in %s", filename.c_str() );
+                  e_logf( "  Couldn't find file in %s", filename.c_str() );
                   break;
                 case LUA_ERRMEM:
-                  e_logf( "OOM error in %s", filename.c_str() );
+                  e_logf( "  OOM error in %s", filename.c_str() );
                   break;
                 case LUA_OK:
                   lua_getglobal( L, "__sandbox" );
@@ -505,7 +506,7 @@ extern s32 onSave( lua_State* L );
             "  return obj\n"
             "end\n"
             // Unit tests.
-            #if 1 // 1: Perform unity tests!
+            #if 0 // 1: Perform class tests!
               "print'Creating test class'\n"
               "class'test1'{\n"
               "  test1=function(self,name)\n"

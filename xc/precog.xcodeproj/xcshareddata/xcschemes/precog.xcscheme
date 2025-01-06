@@ -63,6 +63,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "xcode"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "ninja"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -75,7 +79,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-oninja_x86_64"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--cross=x86_64,pc,linux,elf"
