@@ -249,7 +249,7 @@ using OnOK             = std::function<void()>;
         bool IEngine::fexists( const string& path ){
           struct stat statbuf;
           if( !stat( path, &statbuf )){
-            if( S_ISFILE( statbuf.st_mode )){
+            if( !access( path, F_OK )){
               return true;
             }
           }
