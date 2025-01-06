@@ -396,19 +396,24 @@ using namespace fs;
               e_break( " * Emscripten not found at ~/emsdk." );
               return;
             }
-          }else if( e_fexists( "/usr/bin/clang++" )){
-            static auto once = e_msg( " * Found clang++ at /usr/bin/" );
-            cxx << "/usr/bin/clang++";
-            (void)once;
-          }else if( e_fexists( "/usr/bin/g++" )){
-            static auto once = e_msg( "  * Found g++ at /usr/bin/" );
-            cxx << "/usr/bin/g++";
-            (void)once;
           }else{
-            static auto once = e_msg( "  * Compiler not found!" );
-            cxx << "clang++";
-            (void)once;
+            cxx << "/usr/bin/clang++";
           }
+          #if 0 // This won't work on Linux because of permissions.
+            if( e_fexists( "/usr/bin/clang++" )){
+              static auto once = e_msg( " * Found clang++ at /usr/bin/" );
+              cxx << "/usr/bin/clang++";
+              (void)once;
+            }else if( e_fexists( "/usr/bin/g++" )){
+              static auto once = e_msg( "  * Found g++ at /usr/bin/" );
+              cxx << "/usr/bin/g++";
+              (void)once;
+            }else{
+              static auto once = e_msg( "  * Compiler not found!" );
+              cxx << "clang++";
+              (void)once;
+            }
+          #endif
           cxx << " $CXX_FLAGS $" << clabel << " ";
           switch( toLanguage().hash() ){
             case "c++23"_64:
