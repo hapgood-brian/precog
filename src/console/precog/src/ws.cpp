@@ -842,6 +842,16 @@ using namespace fs;
                       }else{
                         fs << ".dylib";
                       }
+                    }else{
+                      #if e_compiling( linux )
+                        fs << ".so";
+                      #elif e_compiling( osx )
+                        fs << ".dylib";
+                      #elif e_compiling( microsoft )
+                        fs << ".dll";
+                      #else
+                        e_break( "Please define a platform!" );
+                      #endif
                     }
                     fs << "\n\n";
                     break;
