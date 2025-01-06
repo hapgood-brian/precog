@@ -399,21 +399,6 @@ using namespace fs;
           }else{
             cxx << "/usr/bin/clang++";
           }
-          #if 0 // This won't work on Linux because of permissions.
-            if( e_fexists( "/usr/bin/clang++" )){
-              static auto once = e_msg( " * Found clang++ at /usr/bin/" );
-              cxx << "/usr/bin/clang++";
-              (void)once;
-            }else if( e_fexists( "/usr/bin/g++" )){
-              static auto once = e_msg( "  * Found g++ at /usr/bin/" );
-              cxx << "/usr/bin/g++";
-              (void)once;
-            }else{
-              static auto once = e_msg( "  * Compiler not found!" );
-              cxx << "clang++";
-              (void)once;
-            }
-          #endif
           cxx << " $CXX_FLAGS $" << clabel << " ";
           switch( toLanguage().hash() ){
             case "c++23"_64:
@@ -491,27 +476,6 @@ using namespace fs;
             c << "clang $" << clabel << " -o $out -c $in\n";
           }
         }
-
-        //----------------------------------------------------------------------
-        // Environmental checks (illegal on Linux).
-        //----------------------------------------------------------------------
-
-        #if 0 // This cannot run on linux without permissions or sudo.
-          if( e_fexists( "/usr/bin/clang" )){
-              static auto once = e_msg( "Found clang at /usr/bin/" );
-              c << "/usr/bin/clang";
-              (void)once;
-            }else if( e_fexists( "/usr/bin/gcc" )){
-              static auto once = e_msg( "Found gcc at /usr/bin/" );
-              c << "/usr/bin/gcc";
-              (void)once;
-            }else{
-              e_break( "Compiler not found." );
-              return;
-            }
-            c << " $" << clabel << " -o $out -c $in\n";
-          }
-        #endif
 
         //----------------------------------------------------------------------
         // Write C compilation rule string.
@@ -599,12 +563,12 @@ using namespace fs;
             fs << "  command = $PRE_LINK && ";
             if( bmp->bWasm ){// TODO: Search on path first and use e_dexists().
               fs << "~/emsdk/upstream/emscripten/emcc --shared ";
-            }else if( e_fexists( "/usr/bin/clang" )){
-              fs << "/usr/bin/clang --shared ";
+            }else{
+              fs << "clang --shared ";
               if( lstart != lflags ){
                 fs << lflags << " ";
               }
-            }else e_break( "Compiler not found." );
+            }
             fs << " -lstdc++ $in -o $out && $POST_BUILD\n";
             if( bmp->bWasm )
                  fs << "  description = Linking shared (WASM) library $out\n";
