@@ -405,7 +405,7 @@ using namespace fs;
             cxx << "/usr/bin/g++";
             (void)once;
           }else{
-            static auto once = e_msg( "Guessing clang++ is in PATH" );
+            static auto once = e_msg( "Compiler not found!" );
             cxx << "clang++";
             (void)once;
           }

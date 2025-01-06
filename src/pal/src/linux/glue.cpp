@@ -202,7 +202,7 @@ using OnOK             = std::function<void()>;
 
       //}:                                        |
     //}:                                          |
-    //[io]:{                                      |
+    //[i/o]:{                                     |
       //tempPath:{                                |
 
         string IEngine::tempPath(){
@@ -223,7 +223,12 @@ using OnOK             = std::function<void()>;
       //dexists:{                                 |
 
         bool IEngine::dexists( const string& path ){
-          // TODO: Implement for Linux here.
+          struct stat statbuf;
+          if( !stat( path, &statbuf )){
+            if( S_ISDIR( statbuf.st_mode )){
+              return true;
+            }
+          }
           return false;
         }
 
@@ -242,7 +247,12 @@ using OnOK             = std::function<void()>;
       //fexists:{                                 |
 
         bool IEngine::fexists( const string& path ){
-          // TODO: Implement for Linux here.
+          struct stat statbuf;
+          if( !stat( path, &statbuf )){
+            if( S_ISFILE( statbuf.st_mode )){
+              return true;
+            }
+          }
           return false;
         }
 
