@@ -664,7 +664,7 @@ e_msg( equ );
         //----------------------------------------------------------------------
 
         string title; title.catf(
-          "Precog v%u.%u.%u [beta]"
+          "Precog v%u.%u.%u"
             , major
             , minor
             , rev );
@@ -697,7 +697,6 @@ e_msg( equ );
           auto it = args.getIterator();
           while( ++it ){
             const auto& key = it->tolower();
-            e_msgf( "Key: \"%s\"", ccp( key ));
             if( key.left( 2 ).hash() == "-o"_64 ){
               Workspace::out = key.right( key.len()-2 ) + "/";
               continue;
