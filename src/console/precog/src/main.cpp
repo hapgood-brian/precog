@@ -378,15 +378,6 @@ using namespace fs;
           out << "end,\n";
 
         //}:                                      |
-        //save:{                                  |
-
-          out << "save = function(self)\n";
-          out << "  out.save(out.generate(self),'";
-          out << Workspace::out;
-          out << "')\n";
-          out << "end,\n";
-
-        //}:                                      |
         //name:{                                  |
 
           out << "name = function()\n";
