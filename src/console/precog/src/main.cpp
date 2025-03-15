@@ -615,7 +615,7 @@ using namespace fs;
               equ << "\n  ndk = false,";
             }
             equ << "\n}\n";
-e_msg( equ );
+
             //------------------------------------------------------------------
             // Create the targeted script and sandbox it. Gets called twice if
             // generating for ios and macos simultaneously.
