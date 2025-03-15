@@ -14,10 +14,9 @@
 
     namespace gfc{
 
-      #define XCODE_PROJECT_SLOTS 19
-      #define NINJA_PROJECT_SLOTS  8
-      #define QMAKE_PROJECT_SLOTS 11
-      #define  MSVC_PROJECT_SLOTS 10
+      #define PROJECT_SLOTS_XCODE 19
+      #define PROJECT_SLOTS_NINJA  8
+      #define  PROJECT_SLOTS_MSVC 10
       #define   NDK_PROJECT_SLOTS  8
 
       extern strings g_vIncludeStatements;
@@ -360,12 +359,12 @@
           // Apple Xcode project generator.
           //--------------------------------------------------------------------
 
-          struct Xcode final:Project<XCODE_PROJECT_SLOTS>{
+          struct Xcode final:Project<PROJECT_SLOTS_XCODE>{
 
             //------------------------------------+-----------------------------
             //Reflect:{                           |
 
-              e_reflect_no_properties( Xcode, Project<XCODE_PROJECT_SLOTS> );
+              e_reflect_no_properties( Xcode, Project<PROJECT_SLOTS_XCODE> );
 
             //}:                                  |
             //Classes:{                           |
@@ -401,7 +400,7 @@
             //}:                                  |
             //Asserts:{                           |
 
-              static_assert( e_underlying( Type::kMax )==XCODE_PROJECT_SLOTS );
+              static_assert( e_underlying( Type::kMax )==PROJECT_SLOTS_XCODE );
 
             //}:                                  |
             //Methods:{                           |
@@ -569,48 +568,6 @@
           };
 
           //--------------------------------------------------------------------
-          // Qt project Qmake generator.
-          //--------------------------------------------------------------------
-
-          struct Qmake final:Project<QMAKE_PROJECT_SLOTS>{
-
-            e_reflect_no_properties( Qmake, Project<QMAKE_PROJECT_SLOTS> );
-
-            //------------------------------------+-----------------------------
-            //Classes:{                           |
-
-              enum class Type:u32{
-                kStaticLib,
-                kSharedLib,
-                kHxx,
-                kHpp,
-                kCxx,
-                kCpp,
-                kInl,
-                kCC,
-                kHH,
-                kH,
-                kC,
-                kMax
-              };
-
-              static_assert( e_underlying( Type::kMax )==QMAKE_PROJECT_SLOTS );
-
-            //}:                                  |
-            //Methods:{                           |
-
-              virtual bool sortingHat( const string& path )override;
-              virtual void serialize( fs::Writer& )const override;
-              ccp extFromEnum( const Type e )const;
-
-            //}:                                  |
-            //------------------------------------+-----------------------------
-
-            virtual~Qmake() = default;
-            Qmake() = default;
-          };
-
-          //--------------------------------------------------------------------
           // Android NDK project generator.
           //--------------------------------------------------------------------
 
@@ -653,9 +610,9 @@
           // Unix Ninja project generator.
           //--------------------------------------------------------------------
 
-          struct Ninja final:Project<NINJA_PROJECT_SLOTS>{
+          struct Ninja final:Project<PROJECT_SLOTS_NINJA>{
 
-            e_reflect_no_properties( Ninja, Project<NINJA_PROJECT_SLOTS> );
+            e_reflect_no_properties( Ninja, Project<PROJECT_SLOTS_NINJA> );
 
             //------------------------------------+-----------------------------
             //Classes:{                           |
@@ -672,7 +629,7 @@
                 kMax
               };
 
-              static_assert( e_underlying( Type::kMax )==NINJA_PROJECT_SLOTS );
+              static_assert( e_underlying( Type::kMax )==PROJECT_SLOTS_NINJA );
 
             //}:                                  |
             //Methods:{                           |
@@ -694,9 +651,9 @@
           // Microsoft Visual Studio project generator.
           //--------------------------------------------------------------------
 
-          struct MSVC final:Project<MSVC_PROJECT_SLOTS>{
+          struct MSVC final:Project<PROJECT_SLOTS_MSVC>{
 
-            e_reflect_no_properties( MSVC, Project<MSVC_PROJECT_SLOTS> );
+            e_reflect_no_properties( MSVC, Project<PROJECT_SLOTS_MSVC> );
 
             //------------------------------------+-----------------------------
             //Classes:{                           |
@@ -715,7 +672,7 @@
                 kMax
               };
 
-              static_assert( e_underlying( Type::kMax )==MSVC_PROJECT_SLOTS );
+              static_assert( e_underlying( Type::kMax )==PROJECT_SLOTS_MSVC );
 
             //}:                                  |
             //Methods:{                           |
@@ -813,10 +770,9 @@
 
         void serializeSln2022( fs::Writer& )const;
         void serializeSln2019( fs::Writer& )const;
+        void serializeGradle(  fs::Writer& )const;
         void serializeXcode(   fs::Writer& )const;
         void serializeNinja(   fs::Writer& )const;
-        void serializeQmake(   fs::Writer& )const;
-        void serializeGradle(  fs::Writer& )const;
 
         /* Program facing */
 
@@ -835,7 +791,6 @@
           , bGradle:1
           , bNinja:1
           , bCmake:1
-          , bQmake:1
           , bUnity:1
           , bNDK:1
           // Special platform hints.

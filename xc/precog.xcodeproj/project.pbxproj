@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		801908CFC5ABCD2E21C6AAEB /* liblua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 80DD107A21F891CEC4ADCDB3 /* liblua.a */; };
-		817DFF9EDA4EE701DF90E86C /* qmake.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 88F0EEE06EBE0AEC5AAED3DA /* qmake.cpp */; };
 		8630CCCC4DA6A515CEC5CBDA /* liblz4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 885EEB83FBC7CD0178A5CA9A /* liblz4.a */; };
 		863EBF2B860E2AC8D04511EB /* luacore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86E5F49F3CB201D9F7EC9A41 /* luacore.cpp */; };
 		864B94A047EC7C4C549C9BD5 /* generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81610A8BD328E9BDDC576D29 /* generator.cpp */; };
@@ -38,7 +37,6 @@
 		876CDBCD19ABE1FDEB7C842D /* libpal.a */ = {isa = PBXFileReference; lastKnownFileType = archive.a; path = libpal.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		884621BD0F3551FDAE50A395 /* xcode.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = xcode.cpp; path = ../src/console/precog/src/xcode.cpp; sourceTree = "<group>"; };
 		885EEB83FBC7CD0178A5CA9A /* liblz4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.a; path = liblz4.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		88F0EEE06EBE0AEC5AAED3DA /* qmake.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = qmake.cpp; path = ../src/console/precog/src/qmake.cpp; sourceTree = "<group>"; };
 		88F23B0381C1B0C0EABC405C /* std.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = std.h; path = ../src/console/precog/include/std.h; sourceTree = "<group>"; };
 		8A374A25B6DF07588FA6B3BA /* generators.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = generators.h; path = ../src/console/precog/include/generators.h; sourceTree = "<group>"; };
 		8A6AD40789AEA2A4ADEC2FFC /* luacore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = luacore.h; path = ../src/console/precog/include/luacore.h; sourceTree = "<group>"; };
@@ -93,7 +91,6 @@
 				8AF33008E0B1019AD15D90F3 /* ndk.cpp */,
 				865FDCAF34D1F610CEB93F2B /* ninja.cpp */,
 				82F92CEA9817CDE340EDBDBB /* pbx.mm */,
-				88F0EEE06EBE0AEC5AAED3DA /* qmake.cpp */,
 				8F329BF15D390E4FE7ED257B /* std.cpp */,
 				8744B9E86017917029CD0B8C /* stdafx.cpp */,
 				8F80E64F0CDB9D26017ECF30 /* ws.cpp */,
@@ -223,7 +220,6 @@
 				898E48DFB0F470A0CDFE0B1F /* msvc.cpp in Sources */,
 				89BAF2C4285AEEF99EC23DF3 /* ndk.cpp in Sources */,
 				87FBC92C7BF7F9EBCFC4B6D1 /* ninja.cpp in Sources */,
-				817DFF9EDA4EE701DF90E86C /* qmake.cpp in Sources */,
 				8DC0532E4D14B4D447CF41AD /* std.cpp in Sources */,
 				8CEEACEBF14AF4A38AE56A7D /* stdafx.cpp in Sources */,
 				8A6B3CFAD05F225C01E39DF9 /* ws.cpp in Sources */,

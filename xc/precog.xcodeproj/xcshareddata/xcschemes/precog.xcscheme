@@ -34,12 +34,14 @@
       buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      disableMainThreadChecker = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
-      customWorkingDirectory = "/Users/bhapgood/Unity/Netflix/m3_coretech/Shared/coretech/Standalone/ICU/src/Cpp"
+      customWorkingDirectory = "/Users/bhapgood/Noenvel.games/eon"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
+      enableGPUValidationMode = "1"
       allowLocationSimulation = "YES"
       viewDebuggingEnabled = "No">
       <BuildableProductRunnable
@@ -59,11 +61,11 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "xcode"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "ninja"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-ovs"
@@ -79,6 +81,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-oninja.x64"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-oxc"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

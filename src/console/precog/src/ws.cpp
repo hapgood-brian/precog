@@ -112,21 +112,6 @@ using namespace fs;
         }
 
         //----------------------------------------------------------------------
-        // Save out the Qmake project for Unix, Linux and Android Studio.
-        //----------------------------------------------------------------------
-
-        if( Workspace::bmp->bQmake &&
-              e_isa<Workspace::Qmake>( &wstar )){
-          const auto& qmake =
-              static_cast<const Workspace::Qmake&>( wstar );
-          e_msgf( "Generating %s"
-            , ccp( filename ));
-          Writer fs( filename, kTEXT );
-          qmake.serialize( fs );
-          fs.save();
-        }
-
-        //----------------------------------------------------------------------
         // Save out the Visual Studio 2019-2022 project.
         //----------------------------------------------------------------------
 
@@ -154,10 +139,9 @@ using namespace fs;
   #pragma mark - (extends)  -
 #endif
 
-  e_specialized_extends( Workspace::Project<XCODE_PROJECT_SLOTS> );
-  e_specialized_extends( Workspace::Project<NINJA_PROJECT_SLOTS> );
-  e_specialized_extends( Workspace::Project<QMAKE_PROJECT_SLOTS> );
-  e_specialized_extends( Workspace::Project< MSVC_PROJECT_SLOTS> );
+  e_specialized_extends( Workspace::Project<PROJECT_SLOTS_XCODE> );
+  e_specialized_extends( Workspace::Project<PROJECT_SLOTS_NINJA> );
+  e_specialized_extends( Workspace::Project<PROJECT_SLOTS_MSVC> );
   e_extends( Workspace );
 
 //}:                                              |
@@ -436,13 +420,13 @@ using namespace fs;
           const auto& onSort = [](
                 const auto& a
               , const auto& b )->bool{
-            if( !a.template isa<Project<XCODE_PROJECT_SLOTS>>() )
+            if( !a.template isa<Project<PROJECT_SLOTS_XCODE>>() )
               return false;
-            if( !b.template isa<Project<XCODE_PROJECT_SLOTS>>() )
+            if( !b.template isa<Project<PROJECT_SLOTS_XCODE>>() )
               return false;
             return(
-                a.template as<Project<XCODE_PROJECT_SLOTS>>()->toLabel()
-              < b.template as<Project<XCODE_PROJECT_SLOTS>>()->toLabel()
+                a.template as<Project<PROJECT_SLOTS_XCODE>>()->toLabel()
+              < b.template as<Project<PROJECT_SLOTS_XCODE>>()->toLabel()
             );
           };
           auto& me = *const_cast<Workspace*>( this );
@@ -604,7 +588,7 @@ using namespace fs;
           if( !m_vTargets.empty() )
             fs << "\n";
           it = m_vTargets.getIterator();
-          using P = Project<NINJA_PROJECT_SLOTS>;
+          using P = Project<PROJECT_SLOTS_NINJA>;
           P::Files files;
           while( it ){
             const auto& hTarget = *it;
@@ -1087,123 +1071,6 @@ using namespace fs;
       }
 
     //}:                                          |
-    //serializeQmake:{                            |
-
-      void Workspace::serializeQmake( Writer& fs )const{
-        if( bmp->bQmake ){
-
-          //--------------------------------------------------------------------
-          // Setup main .PRO file and create .PRI files.
-          //--------------------------------------------------------------------
-
-          const string commentLine = "#---------------------------------------"
-            "----------------------------------------\n";
-          const string jokeLine = "#                   The best method for acc"
-            "elerating a computer\n#                      is the one that boos"
-            "ts it by 9.8 m/s2.\n";
-          fs << commentLine
-             << jokeLine
-             << commentLine
-             << "# GENERATED FILE DO NOT EDIT IN ANY WAY SHAPE OR FORM SOMETHIN"
-               "G BAD WILL HAPPEN\n"
-             << commentLine;
-
-          //------------------------------------------------------------------
-          // Save PRI files.
-          //------------------------------------------------------------------
-
-          static constexpr u64 kOrder[4]{
-            "static"_64, "shared"_64, "console"_64, "application"_64
-          };
-          fs << "\nTEMPLATE = subdirs\n";
-          fs << "CONFIG += ordered\n";
-          for( u32 i=0; i<4; ++i ){
-            auto it = m_vTargets.getIterator();
-            if( it ){
-              while( it ){
-                if( it->isa<Qmake>() ){
-                  const auto& qmake_target = it->as<Qmake>().cast();
-                  if( qmake_target.toBuild().tolower().hash() == kOrder[ i ]){
-                    const auto& targetName = qmake_target.toLabel().tolower();
-                    fs << "SUBDIRS +=";
-                    fs <<  " "  << targetName << "\n";
-                    e_md( Workspace::out + targetName );
-                    a_saveProject( Workspace::out
-                      + targetName
-                      + "/"
-                      + targetName
-                      + ".pro"
-                      , qmake_target
-                    );
-                  }
-                }
-                ++it;
-              }
-            }
-          }
-
-          //--------------------------------------------------------------------
-          // Save PRO files.
-          //--------------------------------------------------------------------
-
-          auto it = m_vTargets.getIterator();
-          while( it ){
-            if( it->isa<Qmake>() ){
-              const auto& qmake_target = it->as<Qmake>().cast();
-              if( !qmake_target.toLinkWith().empty() ){
-                const auto& qmake_name = qmake_target.toLabel().tolower();
-                auto qmake_link = qmake_target.toLinkWith();
-                qmake_link.erase( "\n" );
-                qmake_link.erase( " " );
-                const auto& links_with = qmake_link.splitAtCommas();
-                strings dependencies;
-                if( !links_with.empty() ){
-                  auto i2 = links_with.getIterator();
-                  while( i2 ){
-                    string name = i2->tolower();
-                    if( name.left( 3 ).hash() == "lib"_64 ){
-                      auto dep = name.filename();
-                      dep.ltrim( 3 );
-                      if( dep.ext().tolower().hash() == ".a"_64 )
-                        dep.trim( 2 );
-                      else if( dep.ext().tolower().hash() == ".dll"_64 )
-                        dep.trim( 4 );
-                      else if( dep.ext().tolower().hash() == ".so"_64 )
-                        dep.trim( 3 );
-                      else if( dep.ext().tolower().hash() == ".dylib"_64 )
-                        dep.trim( 6 );
-                      dependencies.push( dep );
-                    }else{
-                      // TODO: Do the microsoft thing!
-                    }
-                    ++i2;
-                  }
-                }
-                if( !dependencies.empty() ){
-                  fs << qmake_name
-                     << ".deps =";
-                  auto i2 = dependencies.getIterator();
-                  while( i2 ){
-                    fs << " "
-                       << *i2;
-                    ++i2;
-                  }
-                  fs << "\n";
-                }
-              }
-            }
-            ++it;
-          }
-          fs << "\n"
-             << commentLine
-             << "# vim:ft=qmake\n"
-             << commentLine;
-          bmp->bQmake = 0;
-          return;
-        }
-      }
-
-    //}:                                          |
     //serializeGradle:{                           |
 
       void Workspace::serializeGradle( Writer& fs )const{
@@ -1336,7 +1203,6 @@ using namespace fs;
         serializeSln2019( fs );
         serializeSln2022( fs );
         serializeXcode(   fs );
-        serializeQmake(   fs );
         serializeNinja(   fs );
         serializeGradle(  fs );
       }

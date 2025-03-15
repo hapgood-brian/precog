@@ -321,9 +321,6 @@ using namespace fs;
         if( Workspace::bmp->bWasm ){
           return"  return'wasm'";
         }
-        if( Workspace::bmp->bQmake ){
-          return"  return'qmake'";
-        }
         if( Workspace::bmp->bXcode11 ||
             Workspace::bmp->bXcode12 ||
             Workspace::bmp->bXcode15 ||
@@ -607,11 +604,6 @@ using namespace fs;
               equ << "\n  emscripten = false,";
               equ << "\n  wasm = false,";
             }
-            if( Workspace::bmp->bQmake ){
-              equ << "\n  qmake = true,";
-            }else{
-              equ << "\n  qmake = false,";
-            }
             if( Workspace::bmp->bNinja ){
               equ << "\n  ninja = true,";
             }else{
@@ -623,7 +615,7 @@ using namespace fs;
               equ << "\n  ndk = false,";
             }
             equ << "\n}\n";
-
+e_msg( equ );
             //------------------------------------------------------------------
             // Create the targeted script and sandbox it. Gets called twice if
             // generating for ios and macos simultaneously.
@@ -661,9 +653,9 @@ using namespace fs;
         //----------------------------------------------------------------------
 
         // Each has 256 steps: 0x00 thru 0xFF.
-        static constexpr u8 major = 0x02; // Major version number [majrelease]
-        static constexpr u8 minor = 0x02; // Minor version number [minrelease]
-        static constexpr u8 rev   = 0x0A; // Revision
+        static constexpr u8 major = 0x03; // Major version number [majrelease]
+        static constexpr u8 minor = 0x00; // Minor version number [minrelease]
+        static constexpr u8 rev   = 0x00; // Revision
         static constexpr u8 build = 0x00; // Build (Reg bvilds).
         static constexpr u8 patch = 0x00; // Patch (bug fixes).
 
@@ -705,6 +697,7 @@ using namespace fs;
           auto it = args.getIterator();
           while( ++it ){
             const auto& key = it->tolower();
+            e_msgf( "Key: \"%s\"", ccp( key ));
             if( key.left( 2 ).hash() == "-o"_64 ){
               Workspace::out = key.right( key.len()-2 ) + "/";
               continue;
@@ -712,54 +705,46 @@ using namespace fs;
             switch(( key.hash() )){
 
               //----------------------------------------------------------------
-              // Export a Qmake project.
+              // Export an Android gradle project.
               //----------------------------------------------------------------
 
-              case"qmake"_64:
-                Workspace::bmp->bQmake = 1;
+              case"gradle"_64:
+                Workspace::bmp->bGradle = 1;// and Cmake...?
+                Workspace::bmp->bNDK    = 1;
                 continue;
 
-                //--------------------------------------------------------------
-                // Export an Android gradle project.
-                //--------------------------------------------------------------
+              //----------------------------------------------------------------
+              // Export a Visual Studio 2022 project instead of default 2019.
+              //----------------------------------------------------------------
 
-                case"gradle"_64:
-                  Workspace::bmp->bGradle = 1;// and Cmake...?
-                  Workspace::bmp->bNDK    = 1;
-                  continue;
+              case"vs2022=v143"_64:
+                Workspace::bmp->bVSTools143 = 1;
+                Workspace::bmp->bVS2022     = 1;
+                continue;
+              case"vs2022"_64:
+                Workspace::bmp->bVSTools143 = 1;
+                Workspace::bmp->bVS2022     = 1;
+                continue;
+              case"vs2019"_64:
+                Workspace::bmp->bVS2019 = 1;
+                continue;
 
-                //--------------------------------------------------------------
-                // Export a Visual Studio 2022 project instead of default 2019.
-                //--------------------------------------------------------------
+              //----------------------------------------------------------------
+              // Export to Ninja using emscripten and web assembly not C++.
+              //----------------------------------------------------------------
 
-                case"vs2022=v143"_64:
-                  Workspace::bmp->bVSTools143 = 1;
-                  Workspace::bmp->bVS2022     = 1;
-                  continue;
-                case"vs2019"_64:
-                  Workspace::bmp->bVS2019 = 1;
-                  continue;
-                case"vs2022"_64:
-                  Workspace::bmp->bVSTools143 = 1;
-                  Workspace::bmp->bVS2022     = 1;
-                  continue;
+              // Handle emscripten and wasm options.
+              case"emscripten"_64:
+                [[fallthrough]];
+              case"wasm"_64:
+                Workspace::bmp->bNinja = 1;
+                Workspace::bmp->bWasm  = 1;
+                continue;
 
-                //--------------------------------------------------------------
-                // Export to Ninja using emscripten and web assembly not C++.
-                //--------------------------------------------------------------
-
-                // Handle emscripten and wasm options.
-                case"emscripten"_64:
-                  [[fallthrough]];
-                case"wasm"_64:
-                  Workspace::bmp->bWasm = 1;
-                  Workspace::bmp->bNinja      = 1;
-                  continue;
-
-                // Handle ninja option except on linux where it is the default.
-                case"ninja"_64:
-                  Workspace::bmp->bNinja = 1;
-                  continue;
+              // Handle ninja option except on linux where it is the default.
+              case"ninja"_64:
+                Workspace::bmp->bNinja = 1;
+                continue;
 
               //----------------------------------------------------------------
               // Enable iOS builds with or without macOS support too. Note to
@@ -823,23 +808,6 @@ using namespace fs;
                   Workspace::bmp->bUTF16 = 1;
                   continue;
                 }
-
-                //--------------------------------------------------------------
-                // Importing [Monty] Python scripts and running them.
-                //--------------------------------------------------------------
-
-                #if e_compiling( experimental )
-                  if( it->tolower().left( 9 ).hash() == "--import="_64 ){
-                    Workspace::imports.push( it->tolower().right( it->len()-9 );
-                    Workspace::bmp->bImports = 1;
-                    continue;
-                  }
-                  if( it->tolower().left( 2 ).hash() == "-i"_64 ){
-                    Workspace::imports.push( it->tolower().right( it->len()-2 );
-                    Workspace::bmp->bImports = 1;
-                    continue;
-                  }
-                #endif
 
                 //--------------------------------------------------------------
                 // Cross compiling option.
@@ -982,7 +950,6 @@ using namespace fs;
                   e_msg( "      vs2022{=[v143]}" );
                   e_msg( "      emscripten" );
                   e_msg( "      gradle" );
-                  e_msg( "      qmake" );
                   e_msg( "      ninja" );
                   e_msg( "      wasm" );
                   e_msg( "    Compiling:" );
