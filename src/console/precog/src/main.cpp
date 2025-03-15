@@ -346,7 +346,6 @@ using namespace fs;
 
       string platformClass(){
         string out;
-        out << "print'Building libs gfc.'\n";
         out << "platform=class'platform'{\n";
 
         //----------------------------------------+-----------------------------
@@ -421,7 +420,6 @@ using namespace fs;
   //[globals]:{                                   |
 
     string            Workspace::gen;
-    string            Workspace::ext;
     Workspace::States Workspace::bmp;
 
   //}:                                            |
@@ -435,69 +433,7 @@ using namespace fs;
         //----------------------------------------------------------------------
 
         if( !IEngine::dexists( Workspace::out ))
-             IEngine::mkdir( Workspace::out );
-
-        //----------------------------------------------------------------------
-        // Generate template project and return.
-        //----------------------------------------------------------------------
-
-        if( Workspace::bmp->bGenerate ){
-
-          //--------------------------------------+-----------------------------
-          //MaxPlugin:{                           |
-
-            if( Workspace::bmp->bMaxPlugin ){
-
-              //--------------------------------------------------------------
-              // Write out the .DEF file.
-              //--------------------------------------------------------------
-
-              { Writer w( e_xfs( "%s%s.def"
-                  , ccp( Workspace::out )
-                  , ccp( Workspace::gen ))
-                  , kTEXT );
-                w.write( e_xfs(
-                    "LIBRARY %s.dlu\n"
-                  , ccp( Workspace::gen )));
-                w.write( "EXPORTS\n" );
-                w.write( "  LibDescription   @1\n" );
-                w.write( "  LibNumberClasses @2\n" );
-                w.write( "  LibClassDesc     @3\n" );
-                w.write( "  LibVersion       @4\n" );
-                w.save();
-              }
-
-              //----------------------------------------------------------------
-              // Write out the cogfile.lua and platform lua files.
-              //----------------------------------------------------------------
-
-              { Writer w( Workspace::out + "cogfile.lua", kTEXT );
-                w.write( "if platform.is'apple'then\n" );
-                w.write( "  require'cogfile.xcode.lua'\n" );
-                w.write( "elseif platform.is'microsoft'then\n" );
-                w.write( "  require'cogfile.vs2019.lua'\n" );
-                w.write( "elseif platform.is'linux'then\n" );
-                w.write( "  require'cogfile.linux.lua'\n" );
-                w.write( "end\n" );
-                w.save();
-              }
-              { Writer w( Workspace::out + "cogfile.xcode.lua", kTEXT );
-                w.save();
-              }
-              { Writer w( Workspace::out + "cogfile.linux.lua", kTEXT );
-                w.save();
-              }
-              { Writer w( Workspace::out + "cogfile.vs2019.lua", kTEXT );
-                w.save();
-              }
-              return 0;
-            }
-
-          //}:                                    |
-          //--------------------------------------+-----------------------------
-
-          return-1;
-        }
+             IEngine::mkdir(   Workspace::out );
 
         //----------------------------------------------------------------------
         // Create Lua context, setup options on it, and run sandboxed script.
@@ -556,7 +492,6 @@ using namespace fs;
         const auto& st = e_fload( cgf );
         if( st.empty() )
           return -1;
-        e_msg( "" );
         vector<Lua::handle> vlua;
         st.query(
           [&]( ccp pBuffer ){
@@ -889,19 +824,6 @@ using namespace fs;
                     Workspace::wsp->setLanguage( "c++11"_64 );
                     break;
                   }
-                }
-
-                //--------------------------------------------------------------
-                // Tweak output DLL (if there is one)  to be a 3D Studio Max
-                // plugin.  This functionality is only available on Windows
-                // because macOS has no support for 3D Studio Max. If it was
-                // Maya this would be a very different proposition.
-                //--------------------------------------------------------------
-
-                if( it->trimmed( 4 ).tolower().hash() == "--maxplugin="_64 ){
-                  Workspace::ext = it->ltrimmed( it->len() - 4 );
-                  Workspace::bmp->bMaxPlugin = 1;
-                  break;
                 }
 
                 //--------------------------------------------------------------

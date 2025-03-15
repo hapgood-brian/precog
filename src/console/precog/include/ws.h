@@ -778,8 +778,6 @@
 
         e_var_bits( States
           , bWasm:1
-          , bMaxPlugin:1
-          , bGenerate:1
           , bXcode11:1
           , bXcode12:1
           , bXcode15:1
@@ -850,7 +848,6 @@
         static hashmap<u64,Element>* map;
         static Workspace*            wsp; //!< Static workspace wasp.
         static string                gen; //!< Generation identifier.
-        static string                ext; //!< Plugin extension.
         static string                out; //!< Output directory.
         static States                bmp; //!< Global flags.
         static string crossCompileTriple; //!< X compiling.

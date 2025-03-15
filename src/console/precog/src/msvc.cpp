@@ -37,15 +37,9 @@ using namespace fs;
         switch( toBuild().hash() ){
           case"application"_64:
             [[fallthrough]];
-          case"console"_64:
-            return"exe";
-          case"static"_64:
-            return"lib";
-          case"shared"_64:
-            if( bmp->bMaxPlugin ){
-              return"dlu";
-            }
-            return"dll";
+          case"console"_64: return"exe";
+          case"static"_64:  return"lib";
+          case"shared"_64:  return"dll";
         }
         return nullptr;
       }
@@ -110,7 +104,7 @@ using namespace fs;
               + "|"
               + m_sArchitecture
               + "'\">";
-            fs << "\t<TargetExt>"+/* Workspace */ext+"</TargetExt>\n";
+            fs << "\t<TargetExt>dll</TargetExt>\n";
             fs << "</PropertyGroup>\n";
           }
           return;
@@ -959,12 +953,7 @@ using namespace fs;
             writeManifestData( fs, "Debug" );
           }
         fs << "</PropertyGroup>\n";
-        if( !ext.empty() ){
-          writePropGroup( fs, "TargetExt" );
-        }
-        for( u32 n=e_dimof( a_aConfigs ), i=0; i<n; ++i ){
-          writeItemDefGroup( fs, a_aConfigs[ i ]);
-        }
+        writePropGroup( fs, "TargetExt" );
         fs << "<Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.targets\"/>\n";
         fs << "\t<ImportGroup Label=\"ExtensionTargets\">\n";
         fs << "</ImportGroup>\n";
