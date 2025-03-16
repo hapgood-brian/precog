@@ -819,8 +819,8 @@ using namespace fs;
               , copyRefs
               , string( "CopyFiles" )
               , [&]( const File& f ){
-                  if( f.ext().tolower().hash() != ".dylib"_64 )
-                    return;
+                  //if( f.ext().tolower().hash() != ".dylib"_64 )
+                    //return;
                   fs << "        ";
                   fs << f.toBuildID();
                   fs << " /* "
@@ -2369,7 +2369,8 @@ using namespace fs;
                 // Embedding and copying libraries.
                 //--------------------------------------------------------------
 
-                e_msgf( "  Embedding %s", ccp( f ));
+                if( f.isEmbed() )
+                  e_msgf( "  Embedding %s", ccp( f ));
                 const auto& ext = f.ext().tolower();
                 const auto hash = ext.hash();
                 switch( hash ){
@@ -2392,7 +2393,7 @@ using namespace fs;
                     break;
                   }
                 }
-                if( !f.toEmbedRef().empty() )
+                if( f.isEmbed() )
                   out << "    "
                       << f.toBuildID2()
                       << " /* "

@@ -47,7 +47,7 @@
             //Friends:{                           |
 
               friend string e_forceref( const File& f ){
-                if( !f.toEmbedRef().empty() )
+                if( f.isEmbed() )
                   return f.toEmbedRef();
                 auto x = filerefs[ f.m_uFileRef ];
                 if( !x.empty() )
@@ -58,7 +58,7 @@
               }
 
               friend string e_saferef( const File& f ){
-                if( !f.toEmbedRef().empty() )
+                if( f.isEmbed() )
                   return f.toEmbedRef();
                 const auto& x=filerefs[ f.m_uFileRef ];
                 if( x.empty() )
