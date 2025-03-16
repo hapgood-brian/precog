@@ -165,6 +165,7 @@
             e_var_string(  BuildID2 ) = string::streamId();
             e_var_string(  BuildID  ) = string::streamId();
             e_var_string(  EmbedID  ) = string::streamId();
+            e_var_string(  CopyID   ) = string::streamId();
             e_var( u64, u, FileRef  ) = 0ull;
             e_var_string(  RefMSVC  );
             e_var_string(  Where    );
@@ -326,6 +327,7 @@
 
             e_var(         Files, v, PrivateHeaders  );
             e_var(         Files, v, PublicHeaders   );
+            e_var(         Files, v, PluginFiles     );
             e_var(         Files, v, PublicRefs      );
             e_var(         Files, v, EmbedFiles      );
             e_var_mutable( Files, v, LibFiles        );// Frozen: do not use!

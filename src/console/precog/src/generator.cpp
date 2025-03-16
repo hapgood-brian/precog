@@ -553,6 +553,20 @@ using namespace fs;
                 p.setFrameworkPaths( lua_getCleansedID( L, -1 ));
                 break;
 
+              case"m_pluginPaths"_64:/**/{ Workspace::Files files;
+                string plugins( lua_getCleansedID( L, -1 ));
+                strings paths( plugins.splitAtCommas() );
+                paths.foreach(
+                  [&]( const auto& plugin ){
+                    e_msgf( "Found plugin: %s", ccp( plugin ));
+                    Workspace::File f( plugin );
+                         f.toFlags()->bSign = 1;
+                    p.toPluginFiles().push( f );
+                  }
+                );
+                break;
+              }
+
               case"m_libraryPaths"_64:
                 p.setFindLibsPaths( lua_getCleansedID( L, -1 ));
                 break;

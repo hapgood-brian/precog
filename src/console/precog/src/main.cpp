@@ -73,6 +73,16 @@ using namespace fs;
             "            return self\n"
             "          end,\n"
             //}:                                  |
+            //plugins:{                           |
+            "          plugins=function(self,paths)\n"
+            "            if nil~=self.m_pluginPaths then\n"
+            "              self.m_pluginPaths=self.m_pluginPaths..','..paths\n"
+            "            else\n"
+            "              self.m_pluginPaths=paths\n"
+            "            end\n"
+            "            return self\n"
+            "          end,\n"
+            //}:                                  |
             //find_libraries:{                    |
             "          find_libraries=function(self,paths)\n"
             "            if nil~=self.m_libraryPaths then\n"

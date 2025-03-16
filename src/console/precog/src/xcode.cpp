@@ -856,15 +856,16 @@ using namespace fs;
 
             writePBXCopyFilesBuildPhase(
                 string( "13"/* CopyFiles (PlugIns) */)
-              , toEmbedFiles()
+              , toPluginFiles()
               , plugins
               , string( "CopyFiles" )
               , [&]( const File& f ){
                   if( f.ext().tolower() == ".bundle"_64 ){
+                    // Bundles don't exist on iOS so skip them.
                     if( target.tolower().hash() != "macos"_64 )
                       return;
                     fs << "        ";
-                    fs << f.toEmbedID();
+                    fs << f.toCopyID();
                     fs << " /* " + f.filename();
                     fs << " in CopyFiles */,\n";
                   }
@@ -899,6 +900,7 @@ using namespace fs;
                     case".bundle"_64:
                       [[fallthrough]];
                     case".dylib"_64:/**/{
+                      // Shared libraries are forbidden on iOS so skip them.
                       if( target.tolower().hash() != "macos"_64 )
                         break;
                       fs << "        ";
@@ -2349,6 +2351,52 @@ using namespace fs;
                     << " /* "
                     << f.filename();
                 out << " */; };\n";
+              }
+            );
+          }
+
+          //--------------------------------------------------------------------
+          // Now copy all marked library references.
+          //--------------------------------------------------------------------
+
+          { const_cast<Xcode*>( this )->
+            toPluginFiles().foreach(
+              [&]( File& f ){
+
+                //--------------------------------------------------------------
+                // Embedding and copying libraries.
+                //--------------------------------------------------------------
+
+                e_msgf( "  * Plugin \"%s\"", ccp( f ));
+                const auto& ext = f.ext().tolower();
+                const auto hash = ext.hash();
+                out << "    "
+                    << f.toBuildID()
+                    << " /* "
+                    << f.filename()
+                    << " in Plugins */ = {isa = PBXBuildFile; fileRef = "
+                    << f.toCopyID()
+                    << " /* "
+                    << f.filename();
+                out << " */; };";
+                auto stripper = false;
+                switch( hash ){
+                  case".bundle"_64:
+                    out << " settings = {ATTRIBUTES = (";
+                    if( f.isSign() )
+                      out << "CodeSignOnCopy, ";
+                    if( stripper )
+                      out << "RemoveHeadersOnCopy, ";
+                    out << "); };";
+                    break;
+                  case".dylib"_64:
+                    out << " settings = {ATTRIBUTES = (";
+                    if( f.isSign() )
+                      out << "CodeSignOnCopy,";
+                    out << " ); };";
+                    break;
+                }
+                out << " };\n";
               }
             );
           }
