@@ -819,8 +819,8 @@ using namespace fs;
               , copyRefs
               , string( "CopyFiles" )
               , [&]( const File& f ){
-                  //if( f.ext().tolower().hash() != ".dylib"_64 )
-                    //return;
+                  if( f.ext().tolower().hash() != ".dylib"_64 )
+                    return;
                   fs << "        ";
                   fs << f.toBuildID();
                   fs << " /* "
