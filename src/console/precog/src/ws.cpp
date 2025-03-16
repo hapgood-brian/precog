@@ -86,13 +86,14 @@ using namespace fs;
           wstar.serialize( fs );
           fs.save();
 
-          //----------------------------------------------------------------------
+          //--------------------------------------------------------------------
           // Write the entitlements file.
-          //----------------------------------------------------------------------
+          //--------------------------------------------------------------------
 
           if((( xcodeProj.toBuild() == "application"_64 ) &&
-              // Entitlement generation affected here.
-              xcodeProj.toFlags()->bDisableLibValidation)){
+              ( xcodeProj.toFlags()->bDisablePageProtection ||
+                xcodeProj.toFlags()->bDisableLibValidation  ||
+                xcodeProj.toFlags()->bEnableJIT ))){
             xcodeProj.saveEntitlements( Workspace::out );
           }
         }

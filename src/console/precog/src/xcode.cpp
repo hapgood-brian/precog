@@ -259,6 +259,10 @@ using namespace fs;
           wr << "  	<key>com.apple.security.cs.allow-jit</key>\n";
           wr << "  <true/>\n";
         }
+        if( toFlags()->bDisablePageProtection ){
+          wr << "  <key>com.apple.security.cs.disable-executable-page-protection</key>\n";
+          wr << "  <true/>\n";
+        }
         if( toFlags()->bDisableLibValidation ){
           wr << "  <key>com.apple.security.cs.disable-library-validation</key>\n";
           wr << "  <true/>\n";
@@ -272,7 +276,11 @@ using namespace fs;
     //hasEntitlements:{                           |
 
       bool Workspace::Xcode::hasEntitlements()const{
-        return!!toFlags()->bDisableLibValidation;
+        const auto hasAnyEntitlement =
+          toFlags()->bDisablePageProtection ||
+          toFlags()->bDisableLibValidation  ||
+          toFlags()->bEnableJIT;
+        return hasAnyEntitlement;
       }
 
     //}:                                          |
@@ -448,8 +456,7 @@ using namespace fs;
         }else if( Workspace::bmp->bXcode15 ){
           fs << "  objectVersion = 60;\n";
         }else if( Workspace::bmp->bXcode16 ){
-          // TODO: What is the objectVersion for 16? Leave it at 15 now.
-          fs << "  objectVersion = 60;\n";
+          fs << "  objectVersion = 77;\n";
         }
         fs << "  objects = {\n";
         writePBXBuildFileSection(             fs );
@@ -888,7 +895,10 @@ using namespace fs;
               , string( "Embed Frameworks" )
               , [&]( const File& f ){
                   switch( f.ext().tolower().hash() ){
-                    case".framework"_64:/**/{
+                      [[fallthrough]];
+                    case".bundle"_64:
+                      [[fallthrough]];
+                    case".dylib"_64:/**/{
                       if( target.tolower().hash() != "macos"_64 )
                         break;
                       fs << "        ";

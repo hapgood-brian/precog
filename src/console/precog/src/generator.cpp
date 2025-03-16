@@ -239,6 +239,26 @@ using namespace fs;
               }
 
             //}:                                  |
+            //DisablePageProtection:{             |
+
+              case"m_disablePageProtection"_64:/**/{
+                const string& boolean = lua_tostring( L, -1 );
+                if( boolean.empty() )
+                  break;
+                switch( boolean.tolower().hash() ){
+                  case"false"_64:
+                  case"no"_64:
+                    p.toFlags()->bDisablePageProtection = 0;
+                    break;
+                  case"true"_64:
+                  case"yes"_64:
+                    p.toFlags()->bDisablePageProtection = 1;
+                    break;
+                }
+                break;
+              }
+
+            //}:                                  |
             //DisableLibValidation:{              |
 
               case"m_disableLibValidation"_64:/**/{

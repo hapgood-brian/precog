@@ -511,6 +511,7 @@
               , const string& dbgBuild )>& lambda )const;
 
             e_var_bits( Flags
+              , bDisablePageProtection:1
               , bDisableLibValidation:1
               , bHardenedRuntime:1
               , bUniversalBinary:1
