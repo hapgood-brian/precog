@@ -2256,6 +2256,11 @@ using namespace fs;
                   hits.set( w.hash(), 1 );
                 else return;
                 File f( w );
+
+                //--------------------------------------------------------------
+                // Append extension to filename: necessary in case of system f.
+                //--------------------------------------------------------------
+
                 if( f.isSystemFramework() ){
                   (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
                   out << "    "
@@ -2321,16 +2326,18 @@ using namespace fs;
                     f << ".framework";
                   }
                 }
-                const auto& hext = f.ext().tolower().hash();
-                switch( hext ){
+                const auto& ext_hash = f.ext().tolower().hash();
+                switch( ext_hash ){
                   case".framework"_64:
                     [[fallthrough]];
                   case".bundle"_64:
+                    [[fallthrough]];
+                  case".dylib"_64:
                     return;
                   default:
                     break;
                 }
-                if( f.ext().empty() )
+                if( !ext_hash )
                   return;
                 (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
                 out << "    "
@@ -2357,7 +2364,14 @@ using namespace fs;
                 else return;
                 if( f.ext().empty() )
                   return;
-                const auto hash = f.ext().tolower().hash();
+
+                //--------------------------------------------------------------
+                // Embedding and copying libraries.
+                //--------------------------------------------------------------
+
+                e_msgf( "  Embedding %s", ccp( f ));
+                const auto& ext = f.ext().tolower();
+                const auto hash = ext.hash();
                 switch( hash ){
                   case".framework"_64:
                     break;
@@ -2378,27 +2392,34 @@ using namespace fs;
                     break;
                   }
                 }
-                if(( hash !=".bundle"_64 ) && f.toEmbedRef().empty() )
-                  f.setEmbedRef( string::streamId() );
-                out << "    "
-                    << f.toBuildID2()
-                    << " /* "
-                    << f.filename()
-                    << " in "
-                    << ( hash==".bundle"_64 ? "CopyFiles" : "Embed Frameworks" )
-                    << " */ = {isa = PBXBuildFile; fileRef = "
-                    << e_saferef( f )
-                    << " /* "
-                    << f.filename();
+                if( !f.toEmbedRef().empty() )
+                  out << "    "
+                      << f.toBuildID2()
+                      << " /* "
+                      << f.filename()
+                      << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = "
+                      << f.toEmbedRef()
+                      << " /* "
+                      << f.filename();
+             else out << "    "
+                      << f.toBuildID2()
+                      << " /* "
+                      << f.filename()
+                      << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
+                      << e_saferef( f )
+                      << " /* "
+                      << f.filename();
                 out << " */;";
-                switch( f.ext().tolower().hash() ){
+                auto stripper = false;
+                switch( hash ){
                   case".framework"_64:
+                    stripper = true;
                     [[fallthrough]];
                   case".bundle"_64:
                     out << " settings = {ATTRIBUTES = (";
                     if( f.isSign() )
                       out << "CodeSignOnCopy, ";
-//                  if( f.isStrip() ) TODO: Figure out why this is false.
+                    if( stripper )
                       out << "RemoveHeadersOnCopy, ";
                     out << "); };";
                     break;
@@ -2456,19 +2477,15 @@ using namespace fs;
               [&]( auto& f ){
                 if( f.empty() )
                   return;
-                switch( f.ext().tolower().hash() ){
-                  default:
-                    out << "    "
-                        << f.toBuildID()
-                        << " /* "
-                        << f.filename()
-                        << " in Resource */ = {isa = PBXBuildFile; fileRef = "
-                        << e_saferef( f )
-                        << " /* "
-                        << f.filename();
-                    out << " */; };\n";
-                    break;
-                }
+                out << "    "
+                    << f.toBuildID()
+                    << " /* "
+                    << f.filename()
+                    << " in Resource */ = {isa = PBXBuildFile; fileRef = "
+                    << e_saferef( f )
+                    << " /* "
+                    << f.filename();
+                out << " */; };\n";
               }
             );
           }
