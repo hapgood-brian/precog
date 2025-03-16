@@ -421,6 +421,17 @@
 
           private:
 
+            void writeFileReferencePlugins( fs::Writer&
+              , Files& rVectorOFileObjects
+              , const string& type
+              , const string& word
+              , const string& tree )const;
+            void writeFileReferencePlugin( fs::Writer&
+              , const string& type
+              , const string& name
+              , const string& word
+              , const string& tree
+              , const File& fileObject )const;
             void writeFileReferenceGroups( fs::Writer&
               , Files& rVectorOFileObjects
               , const string& type

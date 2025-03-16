@@ -12,6 +12,7 @@
 #include"luacore.h"
 #include"std.h"
 #include"ws.h"
+#include<set>
 #include<regex>
 
 using namespace EON;
@@ -476,6 +477,149 @@ using namespace fs;
         fs << "  };\n";
         fs << "  rootObject = " + m_sProjectObject + " /* Project object */;\n";
         fs << "}\n\n// vim:ft=cpp";
+      }
+
+    //}:                                          |
+    //writeFileReferencePlugin*:{                 |
+
+      void Workspace::Xcode::writeFileReferencePlugin( Writer& fs
+          , const string& type
+          , const string& name
+          , const string& explicitT // expliciteFileType, etc.
+          , const string& tree
+          , const File&   file )const{
+        // Note _path must end with /
+        auto sourceTree( tree );
+        static std::set<u64>_;
+        string key;
+        key.catf( "%s:%s"
+          , ccp( file )
+          , ccp( file.toWhere() ));
+        if( _.find(    key.hash() ) != _.end() )
+            _.emplace( key.hash() );
+        else return;
+        const auto forcedRef = e_forceref( file );
+        fs << "    "
+           << forcedRef
+           << " /* "
+           << file.filename().c_str()
+           << " */"
+           << " = {isa = PBXFileReference; "
+           << explicitT
+           << " = "
+           << type;
+        fs << "; ";
+        File f( file );
+        fs << "name = " << file.filename() << "; ";
+        const auto& osextra = f.os().ext().tolower();
+        if( tree.hash() != "BUILT_PRODUCTS_DIR"_64 ){
+          if( osextra.hash() != ".entitlements"_64 ){
+            fs << "path = "
+               << ( f.toWhere().empty()
+                ? ( "../" + f )
+                : ( "../" + f.toWhere() + f ))
+               << "; ";
+          }else{
+            fs << "path = " << f.os() << "; ";
+          }
+        }else{
+          if( f.toWhere().empty() ){
+           switch( osextra.hash() ){
+              case".framework"_64:
+                [[fallthrough]];
+              case".bundle"_64:
+                [[fallthrough]];
+              case".dylib"_64:
+                [[fallthrough]];
+              case".a"_64:/**/{
+                string out;
+                const auto paths = toFindLibsPaths().splitAtCommas();
+                auto it = paths.getIterator();
+                while( it ){
+                  if( e_fexists( *it + "/" + f )){
+                    sourceTree = "SOURCE_ROOT";
+                    f.setWhere( "../"
+                      + *it
+                      + "/"
+                      + f );
+                    break;
+                  }
+                  ++it;
+                }
+                break;
+              }
+            }
+          }
+          fs << "path = "
+             << ( !f.toWhere().empty() ? f.toWhere().os() : f );
+          fs << "; ";
+        }
+        fs << "sourceTree = "
+           << sourceTree;
+        fs << "; };\n";
+      }
+
+      void Workspace::Xcode::writeFileReferencePlugins( Writer& fs
+          , Files& paths
+          , const string& type
+          , const string& word // LastKnownFileType, etc.
+          , const string& tree )const{
+        if( paths.empty() )
+          return;
+        ignore( paths, toIgnoreParts() );
+        paths.sort(
+          []( const auto& a, const auto& b ){
+            return(
+                a.filename().tolower()
+              < b.filename().tolower()
+            );
+          }
+        );
+        const auto& targets = getTargets();
+        paths.foreach(
+          [&]( File& f ){
+            auto it = targets.getIterator();
+            while( it ){
+              const auto& name = f.os();
+              const auto& target = *it;
+              switch( target.hash() ){
+                case "macos"_64:
+                  writeFileReferencePlugin( fs
+                    , type
+                    , name
+                    , word
+                    , tree
+                    , f );
+                  break;
+                case "ios"_64:/**/{
+                  const auto& ext=( !f.toWhere().empty(/* no os call */)
+                    ? f.toWhere().os().ext().tolower()
+                    : f.os().ext().tolower() );
+                  switch( ext.hash() ){
+                    case".framework"_64: [[fallthrough]];
+                    case".bundle"_64:    [[fallthrough]];
+                    case".dylib"_64:
+                      // No support on iOS for frameworks, bundles, dylibs,
+                      // or text-based-dylibs.
+                      break;
+                    case".a"_64:
+                      [[fallthrough]];
+                    default:
+                      writeFileReferencePlugin( fs
+                        , type
+                        , name
+                        , word
+                        , tree
+                        , f );
+                      break;
+                  }
+                  break;
+                }
+              }
+              ++it;
+            }
+          }
+        );
       }
 
     //}:                                          |
@@ -1795,6 +1939,34 @@ using namespace fs;
         // libs including ".framework", ".dylib", and ".a".
         //----------------------------------------------------------------------
 
+        toPluginFiles().foreach(
+          [&]( const auto& f ){
+            Files fileVector{ f };
+            switch( f.ext().tolower().hash() ){
+              case".framework"_64:
+                break;
+              case".bundle"_64:/**/{
+                writeFileReferencePlugins( out
+                  , fileVector
+                  , "wrapper.cfbundle"
+                  , "explicitFileType"
+                  , "BUILT_PRODUCTS_DIR" );
+                break;
+              }
+              case".dylib"_64:/**/{
+                writeFileReferencePlugins( out
+                  , fileVector
+                  , "\"compiled.mach-o.dylib\""
+                  , "explicitFileType"
+                  , "BUILT_PRODUCTS_DIR" );
+                break;
+              }
+              case".a"_64:/**/{
+                break;
+              }
+            }
+          }
+        );
         toEmbedFiles().foreach(
           [&]( const auto& f ){
             Files fileVector{ f };
@@ -2367,15 +2539,15 @@ using namespace fs;
                 // Embedding and copying libraries.
                 //--------------------------------------------------------------
 
-                e_msgf( "  * Plugin \"%s\"", ccp( f ));
+                e_msgf( "  Plugging %s", ccp( f.base() ));
                 const auto& ext = f.ext().tolower();
                 const auto hash = ext.hash();
                 out << "    "
-                    << f.toBuildID()
+                    << f.toCopyID()
                     << " /* "
                     << f.filename()
                     << " in Plugins */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toCopyID()
+                    << f.toFileRef()
                     << " /* "
                     << f.filename();
                 out << " */; };";

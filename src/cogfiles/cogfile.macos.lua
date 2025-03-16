@@ -14,6 +14,29 @@ local UNIVERSAL_BIN   = 'yes'
 local APPLE_SILICON   = 'no'
 
 --------------------------------------------------------------------------------
+--
+-- Generating for Xcode 16/PBX version 16.
+--
+--------------------------------------------------+-----------------------------
+--Local functions:{                               |
+  --universal:{                                   |
+
+    local universal=function(t)
+      local ret=false
+      if UNIVERSAL_BIN=='yes'then
+        t:setUniversal'yes'
+        ret=true
+      end
+      if APPLE_SILICON=='yes'then
+        t:setUniversal'yes'
+        ret=true
+      end
+      return ret
+    end
+
+  --}:                                            |
+--}:                                              |
+--------------------------------------------------------------------------------
 -- Create a new wsp under workspace to compile startup code.
 --------------------------------------------------------------------------------
 
@@ -24,7 +47,7 @@ wsp:new'startup'
   : find_sources'src/bootseq/start'
   : universal'yes'
   : target'static'
-  : lang'c++20'
+  : lang'c++23'
 
 --------------------------------------------------------------------------------
 -- Setup the build settings for lz4.
@@ -36,7 +59,7 @@ wsp:new'lz4'
   : find_sources'src/lz4/src'
   : universal'yes'
   : target'static'
-  : lang'c++20'
+  : lang'c++23'
 
 --------------------------------------------------------------------------------
 -- Setup the build settings for lua.
@@ -49,7 +72,7 @@ wsp:new'lua'
   : ignore'lua.c,luac.c'
   : universal'yes'
   : target'static'
-  : lang'c++20'
+  : lang'c++23'
 
 --------------------------------------------------------------------------------
 -- Setup the build settings for gfc.
@@ -65,7 +88,7 @@ wsp:new'gfc'
   : skip_unity'f32.cpp'
   : universal'yes'
   : target'static'
-  : lang'c++20'
+  : lang'c++23'
 
 --------------------------------------------------------------------------------
 -- Create a new wsp under workspace to compile startup code.
@@ -84,7 +107,7 @@ wsp:new'pal'
   : prefix'src/core/include/eon/eon.h'
   : universal'yes'
   : target'static'
-  : lang'c++20'
+  : lang'c++23'
 
 --------------------------------------------------------------------------------
 -- Generate precog executable wsp.
@@ -113,7 +136,7 @@ wsp:new'precog'
   : prefix'src/core/include/eon/eon.h'
   : universal'true'
   : target'console'
-  : lang'c++20'
+  : lang'c++23'
 
 --------------------------------------------------------------------------------
 -- Generate and save all project files.
