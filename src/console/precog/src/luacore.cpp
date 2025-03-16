@@ -928,12 +928,8 @@ extern s32 onSave( lua_State* L );
             script.replace( ",,", "," );
             // narg: 1
             var status = luaL_loadstring( L, script/* <-= Lua function */);
-            if( status ){
-              dumpScript( script );
-              e_msgf( "%s\nCouldn't load string!"
-                , ccp( script )
-              );
-            }
+            if( status )
+              goto err;
             // narg: 2
             lua_getglobal( L, "__sandbox" );//+1=3
             lua_setupvalue( L, -2, 1 );//-1=2
@@ -945,7 +941,9 @@ extern s32 onSave( lua_State* L );
               return true;
             }
           }
-          e_break( "Failed to sandbox" );
+          err: dumpScript( script );
+          e_msgf( "ERROR \"%s\""
+            , lua_tostring( L, -1 ));
           return false;
         }
 

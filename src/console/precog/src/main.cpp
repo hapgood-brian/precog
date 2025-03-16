@@ -233,7 +233,7 @@ using namespace fs;
           "            self.m_enableAppleSilicon=enable\n"
           "            return self\n"
           "          end,\n"
-          "          universal=function(self, enable)\n"
+          "          setUniversal=function(self, enable)\n"
           "            self.m_enableUniversal=enable\n"
           "            return self\n"
           "          end,\n"
