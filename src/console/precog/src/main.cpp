@@ -247,7 +247,7 @@ using namespace fs;
           "            self.m_enableAppleSilicon=enable\n"
           "            return self\n"
           "          end,\n"
-          "          universal=function(self, enable)\n"
+          "          setUniversal=function(self, enable)\n"
           "            self.m_enableUniversal=enable\n"
           "            return self\n"
           "          end,\n"
@@ -595,7 +595,7 @@ using namespace fs;
         // Each has 256 steps: 0x00 thru 0xFF.
         static constexpr u8 major = 0x03; // Major version number [majrelease]
         static constexpr u8 minor = 0x00; // Minor version number [minrelease]
-        static constexpr u8 rev   = 0x04; // Revision
+        static constexpr u8 rev   = 0x05; // Revision
         static constexpr u8 build = 0x00; // Build (Reg bvilds).
         static constexpr u8 patch = 0x00; // Patch (bug fixes).
 
