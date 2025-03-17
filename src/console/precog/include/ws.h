@@ -452,7 +452,6 @@
             e_var_string( PluginsGroup    ) = string::streamId();
             e_var_string( ProjectObject   ) = string::streamId();
             e_var_string( IncludeGroup    ) = string::streamId();
-            e_var_string( EmbedAndSign    );
             e_var_string( EntFileRefID    ) = string::streamId();
             e_var_string( EntBuildID      ) = string::streamId();
             e_var_string( Deployment      ) = "13.0";

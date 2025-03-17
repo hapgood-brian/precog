@@ -1410,245 +1410,222 @@ using namespace fs;
 
             // TODO: This is shitty! All the files are in m_vEmbedFiles with
             // TODO: all the flags set for embedding and signing!
-            const auto embedAndSign = toEmbedAndSign();
-            const auto& vectorsSign = embedAndSign
-                . splitAtCommas();{
-              files.foreach(
-                [&]( File& f ){
-                  if( f.empty() )
+            const auto embedAndSign = toEmbedFiles();
+            files.foreach(
+              [&]( File& f ){
+                if( f.empty() )
+                  return;
+                m_vLibFiles.push( f );
+                const auto& wt = f.toWhere( );
+                if( libCache.find( f.hash() ))
+                  return;
+                libCache.set( f.hash(), 1 );
+                const auto/* no & */ext=(
+                  ! f.toWhere().empty()
+                  ? f.toWhere()
+                  : f )
+                  . ext()
+                  . tolower()
+                  . hash();
+                if( f.isEmbed() ){
+
+                  //------------------------------------------------------------
+                  // Bail conditions.
+                  //------------------------------------------------------------
+
+                  const auto isHex = f.toBuildID().is_hex();
+                  if( isHex )
                     return;
-                  m_vLibFiles.push( f );
-                  const auto& wt = f.toWhere( );
-                  if( libCache.find( f.hash() ))
-                    return;
-                  libCache.set( f.hash(), 1 );
-                  const auto/* no & */ext=(
-                    ! f.toWhere().empty()
-                    ? f.toWhere()
-                    : f )
-                    . ext()
-                    . tolower()
-                    . hash();
-                  vectorsSign.foreach(
-                    [&]( const auto& _f ){
-                      if( strstr( f, _f )){
-                        const auto key = wt.hash()
-                          ? wt.hash()
-                          : _f.hash();
-                        if( !keyCache.find( key )){
-                          e_msgf( "  $(lightblue)Embedding lib%s%s"
-                            , ccp( f
-                            . filename()
-                            . ltrimmed( 3 ))
-                            , ccp( f.ext().tolower() ));
-                          f.setEmbed( true );
-                          f.setSign( true );
-                          keyCache.set( key
-                            , 1
-                          );
-                        }
-                      }
-                    }
-                  );
-                  if( f.isEmbed() ){
 
-                    //----------------------------------------------------------
-                    // Bail conditions.
-                    //----------------------------------------------------------
+                  //------------------------------------------------------------
+                  // Reference in frameworks.
+                  //------------------------------------------------------------
 
-                    const auto isHex = f.toBuildID().is_hex();
-                    if( isHex )
-                      return;
-
-                    //----------------------------------------------------------
-                    // Reference in frameworks.
-                    //----------------------------------------------------------
-
-                    out << "    "
-                      + f.toBuildID()
-                      + " /* "
-                      + f.filename();
-                    switch( ext ){
-                      case".framework"_64:
-                        out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = ";
-                        out << e_saferef( f )
-                            << " /* "
-                            << f.toWhere().os(/* expands $... */).filename();
-                        out << " */; };\n";
-                        break;
-                      case".bundle"_64:
-                        out << " in PlugIns */ = {isa = PBXBuildFile; fileRef = ";
-                        break;
-                      case".tbd"_64:
-                        out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                            << e_saferef( f )
-                            << " /* "
-                            << f.toWhere().os(/* expands $... */).filename();
-                        out << " */; };\n";
-                        break;
-                      default:
-                        out << " */ = {isa = PBXBuildFile; fileRef = "
-                            << e_saferef( f )
-                            << " /* "
-                            << f.os(/* expands $... */).filename();
-                        out << " */; };\n";
-                        break;
-                    }
-
-                    //----------------------------------------------------------
-                    // Local lambda function to add embedding syntax.
-                    //----------------------------------------------------------
-
-                    const auto& stayOnTarget=[&]( const string& target ){
-                      if( target.hash() == "ios"_64 ){
-                        if( ext == ".bundle"_64 ){
-                          e_msgf(
-                            "  Failed embedding %s for %s"
-                            , ccp( f )
-                            , ccp( f.toWhere() ));
-                          return;
-                        }
-                        if( ext == ".dylib"_64 ){
-                          e_msgf(
-                            "  Failed embedding %s for %s"
-                            , ccp( f )
-                            , ccp( f.toWhere() ));
-                          return;
-                        }
-                      }
-                      out << "    "
-                        + f.toEmbedID()
-                        + " /* "
-                        + f.filename();
-                      if( ext == ".framework"_64 ){
-                        out << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ";
-                      }else if(( target != "ios" )&&( ext == ".bundle"_64 )){
-                        out << " in Embed Bundles */ = {isa = PBXBuildFile; fileRef = ";
-                      }else if(( target != "ios" )&&( ext == ".dylib"_64 )){
-                        out << " in Embed Dylibs */ = {isa = PBXBuildFile; fileRef = ";
-                      }else{
-                        out << " */ = {isa = PBXBuildFile; fileRef = ";
-                      }
+                  out << "    "
+                    + f.toBuildID()
+                    + " /* "
+                    + f.filename();
+                  switch( ext ){
+                    case".framework"_64:
+                      out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = ";
                       out << e_saferef( f )
-                        + " /* "
-                        + f.filename()
-                        + " */; settings = {ATTRIBUTES = (";
-                      if( !f.toWhere().empty() ){
-                        out << " ); }; };\n";
-                      }else{
-                        if( f.isSign() )
-                          out << "CodeSignOnCopy, ";
-                        if(( ext == ".framework"_64 ) && f.isStrip() )
-                          out << "RemoveHeadersOnCopy, ";
-                        out << "); }; };\n";
-                      }
-                    };
-
-                    //----------------------------------------------------------
-                    // Reference in embedded frameworks.
-                    //----------------------------------------------------------
-
-                    const auto& targets = getTargets();
-                    auto it = targets.getIterator();
-                    while( it ){
-                      stayOnTarget( *it );
-                      ++it;
+                          << " /* "
+                          << f.toWhere().os(/* expands $... */).filename();
+                      out << " */; };\n";
+                      break;
+                    case".bundle"_64:
+                      out << " in PlugIns */ = {isa = PBXBuildFile; fileRef = ";
+                      break;
+                    case".tbd"_64:
+                      out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
+                          << e_saferef( f )
+                          << " /* "
+                          << f.toWhere().os(/* expands $... */).filename();
+                      out << " */; };\n";
+                      break;
+                    default:/**/{
+                      out << " */ = {isa = PBXBuildFile; fileRef = "
+                          << e_saferef( f )
+                          << " /* "
+                          << f.os(/* expands $... */).filename();
+                      out << " */; };\n";
+                      break;
                     }
-                    return;
                   }
 
                   //------------------------------------------------------------
-                  // Handle non-embeddable targets.
+                  // Local lambda function to add embedding syntax.
+                  //------------------------------------------------------------
+
+                  const auto& stayOnTarget=[&]( const string& target ){
+                    if( target.hash() == "ios"_64 ){
+                      if( ext == ".bundle"_64 ){
+                        e_msgf(
+                          "  Failed embedding %s for %s"
+                          , ccp( f )
+                          , ccp( f.toWhere() ));
+                        return;
+                      }
+                      if( ext == ".dylib"_64 ){
+                        e_msgf(
+                          "  Failed embedding %s for %s"
+                          , ccp( f )
+                          , ccp( f.toWhere() ));
+                        return;
+                      }
+                    }
+                    out << "    "
+                      + f.toEmbedID()
+                      + " /* "
+                      + f.filename();
+                    if( ext == ".framework"_64 ){
+                      out << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ";
+                    }else if(( target != "ios" )&&( ext == ".bundle"_64 )){
+                      out << " in Embed Bundles */ = {isa = PBXBuildFile; fileRef = ";
+                    }else if(( target != "ios" )&&( ext == ".dylib"_64 )){
+                      out << " in Embed Dylibs */ = {isa = PBXBuildFile; fileRef = ";
+                    }else{
+                      out << " */ = {isa = PBXBuildFile; fileRef = ";
+                    }
+                    out << e_saferef( f )
+                      + " /* "
+                      + f.filename()
+                      + " */; settings = {ATTRIBUTES = (";
+                    if( !f.toWhere().empty() ){
+                      out << " ); }; };\n";
+                    }else{
+                      if( f.isSign() )
+                        out << "CodeSignOnCopy, ";
+                      if(( ext == ".framework"_64 ) && f.isStrip() )
+                        out << "RemoveHeadersOnCopy, ";
+                      out << "); }; };\n";
+                    }
+                  };
+
+                  //------------------------------------------------------------
+                  // Reference in embedded frameworks.
                   //------------------------------------------------------------
 
                   const auto& targets = getTargets();
                   auto it = targets.getIterator();
                   while( it ){
-                    if( it->hash() == "macos"_64 ){
-                      switch( ext ){
-                        case".framework"_64:
-                          [[fallthrough]];
-                        case".bundle"_64:
-                          [[fallthrough]];
-                        case".dylib"_64:
-                          [[fallthrough]];
-                        case".tbd"_64:
-                          [[fallthrough]];
-                        case".a"_64:/**/{
-                          out << "    "
-                            + f.toBuildID()
-                            + " /* "
-                            + f.filename();
-                          break;
-                        }
-                        default:/**/{
-                          return;
-                        }
+                    stayOnTarget( *it );
+                    ++it;
+                  }
+                  return;
+                }
+
+                //--------------------------------------------------------------
+                // Handle non-embeddable targets.
+                //--------------------------------------------------------------
+
+                const auto& targets = getTargets();
+                auto it = targets.getIterator();
+                while( it ){
+                  if( it->hash() == "macos"_64 ){
+                    switch( ext ){
+                      case".framework"_64:
+                        [[fallthrough]];
+                      case".bundle"_64:
+                        [[fallthrough]];
+                      case".dylib"_64:
+                        [[fallthrough]];
+                      case".tbd"_64:
+                        [[fallthrough]];
+                      case".a"_64:/**/{
+                        out << "    "
+                          + f.toBuildID()
+                          + " /* "
+                          + f.filename();
+                        break;
                       }
-                    }else{
-                      switch( ext ){
-                        case".framework"_64:
-                          [[fallthrough]];
-                        case".tbd"_64:
-                          [[fallthrough]];
-                        case".a"_64:/**/{
-                          out << "    "
-                            + f.toBuildID()
-                            + " /* "
-                            + f.filename();
-                          break;
-                        }
-                        default:/**/{
-                          return;
-                        }
+                      default:/**/{
+                        return;
                       }
                     }
-                    if( it->hash() == "macos"_64 ){
-                      static const auto isVerbose =
-                          e_getCvar( bool, "VERBOSE_LOGGING" );
-                      if( isVerbose ){
-                        e_msgf( "  Links \"%s\" (%s)",
-                            ccp( f )
-                          , ccp( f.toWhere() )
-                        );
+                  }else{
+                    switch( ext ){
+                      case".framework"_64:
+                        [[fallthrough]];
+                      case".tbd"_64:
+                        [[fallthrough]];
+                      case".a"_64:/**/{
+                        out << "    "
+                          + f.toBuildID()
+                          + " /* "
+                          + f.filename();
+                        break;
                       }
-                      switch( ext ){
-                        case".framework"_64:
-                          out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = ";
-                          break;
-                        case".tbd"_64:
-                          out << " in TBDs */ = {isa = PBXBuildFile; fileRef = ";
-                          break;
-                        case".bundle"_64:
-                          out << " in PlugIns */ = {isa = PBXBuildFile; fileRef = ";
-                          break;
-                        case".dylib"_64:
-                          out << " in Dynamics */ = {isa = PBXBuildFile; fileRef = ";
-                          break;
-                        case".a"_64:
-                          out << " in Statics */ = {isa = PBXBuildFile; fileRef = ";
-                          break;
+                      default:/**/{
+                        return;
                       }
-                    }else switch( ext ){
+                    }
+                  }
+                  if( it->hash() == "macos"_64 ){
+                    static const auto isVerbose =
+                        e_getCvar( bool, "VERBOSE_LOGGING" );
+                    if( isVerbose ){
+                      e_msgf( "  Links \"%s\" (%s)",
+                          ccp( f )
+                        , ccp( f.toWhere() )
+                      );
+                    }
+                    switch( ext ){
                       case".framework"_64:
                         out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = ";
                         break;
                       case".tbd"_64:
                         out << " in TBDs */ = {isa = PBXBuildFile; fileRef = ";
                         break;
+                      case".bundle"_64:
+                        out << " in PlugIns */ = {isa = PBXBuildFile; fileRef = ";
+                        break;
+                      case".dylib"_64:
+                        out << " in Dynamics */ = {isa = PBXBuildFile; fileRef = ";
+                        break;
                       case".a"_64:
                         out << " in Statics */ = {isa = PBXBuildFile; fileRef = ";
                         break;
                     }
-                    out << e_saferef( f )
-                      + " /* "
-                      + f.filename()
-                      + " */; };\n";
-                    ++it;
+                  }else switch( ext ){
+                    case".framework"_64:
+                      out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = ";
+                      break;
+                    case".tbd"_64:
+                      out << " in TBDs */ = {isa = PBXBuildFile; fileRef = ";
+                      break;
+                    case".a"_64:
+                      out << " in Statics */ = {isa = PBXBuildFile; fileRef = ";
+                      break;
                   }
+                  out << e_saferef( f )
+                    + " /* "
+                    + f.filename()
+                    + " */; };\n";
+                  ++it;
                 }
-              );
-            }
+              }
+            );
           }
         }
 

@@ -325,7 +325,6 @@ using namespace fs;
                     . push( f );
                   ++it;
                 }
-                p.setEmbedAndSign( s );
                 break;
               }
 
