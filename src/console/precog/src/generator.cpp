@@ -561,9 +561,10 @@ using namespace fs;
                     e_msgf( "Found plugin: %s", ccp( pluginID ));
                     Workspace::File f( pluginID );
                     f.setEmbedID( pluginID );
-                    f.toFlags()->bPlugin = 1;
-                    f.toFlags()->bSign   = 1;
-                    p.toEmbedFiles().push( f );
+                    f.toFlags()->bEmbed = 1;
+                    p.toEmbedFiles()
+                      . push( f
+                    );
                   }
                 );
                 break;

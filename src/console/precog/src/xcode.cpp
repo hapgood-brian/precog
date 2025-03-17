@@ -1408,6 +1408,8 @@ using namespace fs;
             // Write out the file and embedding line.
             //------------------------------------------------------------------
 
+            // TODO: This is shitty! All the files are in m_vEmbedFiles with
+            // TODO: all the flags set for embedding and signing!
             const auto embedAndSign = toEmbedAndSign();
             const auto& vectorsSign = embedAndSign
                 . splitAtCommas();{
