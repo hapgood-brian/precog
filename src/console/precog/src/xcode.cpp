@@ -2959,7 +2959,8 @@ using namespace fs;
           }
           fs << "        " + m_sFrameworkGroup + " /* Frameworks */,\n"
              << "        " + m_sProductsGroup  + " /* Products */,\n"
-             << "        " + m_sCodeGroup + " /* Code */,\n"
+             << "        " + m_sPluginsGroup   + " /* Plugins */,\n"
+             << "        " + m_sCodeGroup      + " /* Code */,\n"
              << "      );\n"
              << "      sourceTree = \"<group>\";\n"
              << "    };\n";
@@ -3088,6 +3089,44 @@ using namespace fs;
               }
             }
           );
+
+          //--------------------------------------------------------------------
+          // Place plugins in the Plugins group.
+          //--------------------------------------------------------------------
+
+          // Static libraries cannot embed anything close.
+          if( toBuild().tolower().hash() != "static"_64 ){
+            // Write out the Group SID first.
+            fs << "    "
+               << m_sPluginsGroup
+               << " /* Plugins */ = {\n"
+               << "      isa = PBXGroup;\n"
+               << "      children = (\n";
+            // Collect everything we want to embed.
+            Files plugins( toPluginFiles() );
+            plugins.sort(
+              []( const auto& a, const auto& b ){
+                return( a < b );
+              }
+            );
+            std::set<u64>hit;
+            plugins.foreach(
+              [&]( const auto& f ){
+                if( hit.find( f.hash() ) == hit.end() )
+                  hit.emplace( f.hash() );
+                else return;
+                fs << "        " // Library reference per child.
+                   << f.toBuildID()
+                   << " /* "
+                   << f.filename();
+                fs << " */,\n";
+              }
+            );
+            fs << string( "      );\n" )
+               << "      name = Frameworks;\n"
+               << "      sourceTree = \"<group>\";\n";
+            fs << "    };\n";
+          }
 
           //--------------------------------------------------------------------
           // Resources group.

@@ -454,6 +454,7 @@
             e_var_string( ResourcesGroup  ) = string::streamId();
             e_var_string( FrameworkGroup  ) = string::streamId();
             e_var_string( ProductsGroup   ) = string::streamId();
+            e_var_string( PluginsGroup    ) = string::streamId();
             e_var_string( ProjectObject   ) = string::streamId();
             e_var_string( IncludeGroup    ) = string::streamId();
             e_var_string( EmbedAndSign    );
