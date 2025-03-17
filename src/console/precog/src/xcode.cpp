@@ -955,8 +955,10 @@ using namespace fs;
             //------------------------------------------------------------------
 
             Files files;
-            inSources( Type::kPlatform ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            toEmbedFiles().foreach( [&]( const auto& fi ){ files.push( fi ); });
+            inSources( Type::kPlatform ).foreach(
+              [&]( const auto& fi ){ files.push( fi ); });
+            toEmbedFiles().foreach(
+              [&]( const auto& fi ){ files.push( fi ); });
             writePBXCopyFilesBuildPhase(
                 string( "6"/* CopyFiles */)
               , toEmbedFiles()
@@ -995,29 +997,6 @@ using namespace fs;
             );
 
             //------------------------------------------------------------------
-            // Copy embedded frameworks and dylibs etc, into Frameworks folder.
-            //------------------------------------------------------------------
-
-            writePBXCopyFilesBuildPhase(
-                string( "13"/* CopyFiles (PlugIns) */)
-              , toPluginFiles()
-              , plugins
-              , string( "CopyFiles" )
-              , [&]( const File& f ){
-                  if( f.ext().tolower() == ".bundle"_64 ){
-                    // Bundles don't exist on iOS so skip them.
-                    if( target.tolower().hash() != "macos"_64 )
-                      return;
-                    fs << "        ";
-                    fs << f.toCopyID();
-                    fs << " /* " + f.filename();
-                    fs << " in CopyFiles */,\n";
-                  }
-                }
-              , nullptr
-            );
-
-            //------------------------------------------------------------------
             // Copy embedded frameworks and dylibs etc into Frameworks folder.
             // DB0FA58B2758022D00CA287A /* Embed Frameworks */ = {
             //   isa = PBXCopyFilesBuildPhase;
@@ -1040,6 +1019,7 @@ using namespace fs;
               , string( "Embed Frameworks" )
               , [&]( const File& f ){
                   switch( f.ext().tolower().hash() ){
+                    case".framework"_64:
                       [[fallthrough]];
                     case".bundle"_64:
                       [[fallthrough]];
@@ -1048,7 +1028,7 @@ using namespace fs;
                       if( target.tolower().hash() != "macos"_64 )
                         break;
                       fs << "        ";
-                      fs << f.toEmbedID();
+                      fs << f.toBuildID();
                       fs << " /* "
                         + f.filename()
                         + " in Embed Frameworks */,\n";
@@ -1056,9 +1036,31 @@ using namespace fs;
                     }
                   }
                 }
-            , [&](){
-                fs << "      name = \"Embed Frameworks\";\n";
+                , [&](){ fs << "      name = \"Embed Frameworks\";\n";
               }
+            );
+
+            //------------------------------------------------------------------
+            // Copy embedded frameworks and dylibs etc, into Frameworks folder.
+            //------------------------------------------------------------------
+
+            writePBXCopyFilesBuildPhase(
+                string( "13"/* CopyFiles (PlugIns) */)
+              , toEmbedFiles()
+              , plugins
+              , string( "CopyFiles" )
+              , [&]( const File& f ){
+                  if( f.ext().tolower() == ".bundle"_64 ){
+                    // Bundles don't exist on iOS so skip them.
+                    if( target.tolower().hash() != "macos"_64 )
+                      return;
+                    fs << "        ";
+                    fs << f.toBuildID();
+                    fs << " /* " + f.filename();
+                    fs << " in CopyFiles */,\n";
+                  }
+                }
+              , nullptr
             );
           };
 
@@ -1661,37 +1663,13 @@ using namespace fs;
         auto& T = *const_cast<self*>( this );
 
         //----------------------------------------------------------------------
-        // Do the plugins first; I take all libs in plugins files vector. Will
-        // add some validation here, so if someone tries passing down a plugin
-        // that's a framework or a dylib, it'll be prevented. I could probably
-        // do that at a much earlier stage, like when the file is added or not.
-        //----------------------------------------------------------------------
-
-        auto files( toPluginFiles() );
-        const var n = files.size();
-        if( n ){
-          writeFileReferencePlugins( out
-            , files
-            , "wrapper.cfbundle"
-            , "explicitFileType"
-            , "BUILT_PRODUCTS_DIR" );
-          if( e_getCvar( bool, "VERBOSE_OUT" )){
-            //TODO: Wrap with a -v verbose message switch.
-            e_msgf(// Just print a verbose message.
-              "  %u plugins copied."
-              , n
-            );
-          }
-        }
-
-        //----------------------------------------------------------------------
         // We need to take everything in m_aSources[ Type::kPlatform ] and make
         // the PBXFileReference section statement like the next. That should
         // fix everything to do with linking against system frameworks etc.
         // Anything in said m_aSources[ i ].
         //----------------------------------------------------------------------
 
-        files.clear();
+        Files files;
         const auto& linksWith = toLinkWith().splitAtCommas();
         linksWith.foreach(
           [&]( const auto& lw ){
@@ -2530,52 +2508,6 @@ using namespace fs;
           //--------------------------------------------------------------------
 
           { const_cast<Xcode*>( this )->
-            toPluginFiles().foreach(
-              [&]( File& f ){
-
-                //--------------------------------------------------------------
-                // Embedding and copying libraries.
-                //--------------------------------------------------------------
-
-                e_msgf( "  Plugging in %s", ccp( f.base() ));
-                const auto& ext = f.ext().tolower();
-                const auto hash = ext.hash();
-                out << "    "
-                    << f.toCopyID()
-                    << " /* "
-                    << f.filename()
-                    << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toBuildID()
-                    << " /* "
-                    << f.filename();
-                out << " */; };";
-                auto stripper = false;
-                switch( hash ){
-                  case".bundle"_64:
-                    out << " settings = {ATTRIBUTES = (";
-                    if( f.isSign() )
-                      out << "CodeSignOnCopy, ";
-                    if( stripper )
-                      out << "RemoveHeadersOnCopy, ";
-                    out << "); };";
-                    break;
-                  case".dylib"_64:
-                    out << " settings = {ATTRIBUTES = (";
-                    if( f.isSign() )
-                      out << "CodeSignOnCopy,";
-                    out << " ); };";
-                    break;
-                }
-                out << " };\n";
-              }
-            );
-          }
-
-          //--------------------------------------------------------------------
-          // Now embed all the library references.
-          //--------------------------------------------------------------------
-
-          { const_cast<Xcode*>( this )->
             toEmbedFiles().foreach(
               [&]( File& f ){
                 if( !hits.find( f.hash() ))
@@ -2605,7 +2537,7 @@ using namespace fs;
                         << " /* "
                         << f.filename()
                         << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                        << e_saferef( f )
+                        << f.toCopyID()
                         << " /* "
                         << f.filename();
                     out << " */; };\n";
@@ -2626,7 +2558,7 @@ using namespace fs;
                       << " /* "
                       << f.filename()
                       << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
-                      << e_saferef( f )
+                      << f.toEmbedRef()
                       << " /* "
                       << f.filename();
                 out << " */;";
@@ -3066,9 +2998,12 @@ using namespace fs;
                      << " /* include */ = {\n"
                      << "      isa = PBXGroup;\n"
                      << "      children = (\n";
-                inSources( Type::kHpp ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-                inSources( Type::kInl ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-                inSources( Type::kH   ).foreach( [&]( const auto& fi ){ files.push( fi ); });
+                inSources( Type::kHpp ).foreach(
+                  [&]( const auto& fi ){ files.push( fi ); });
+                inSources( Type::kInl ).foreach(
+                  [&]( const auto& fi ){ files.push( fi ); });
+                inSources( Type::kH ).foreach(
+                  [&]( const auto& fi ){ files.push( fi ); });
                 files.sort(
                   []( const auto& a, const auto& b ){
                     return( a < b );
@@ -3090,43 +3025,6 @@ using namespace fs;
               }
             }
           );
-
-          //--------------------------------------------------------------------
-          // Place plugins in the Plugins group.
-          //--------------------------------------------------------------------
-
-          if( !toPluginFiles().empty() ){
-            // Write out the Group SID first.
-            fs << "    "
-               << m_sPluginsGroup
-               << " /* Plugins */ = {\n"
-               << "      isa = PBXGroup;\n"
-               << "      children = (\n";
-            // Collect everything we want to embed.
-            Files plugins( toPluginFiles() );
-            plugins.sort(
-              []( const auto& a, const auto& b ){
-                return( a.len() > b.len() );
-              }
-            );
-            std::set<u64>hit;
-            plugins.foreach(
-              [&]( const auto& f ){
-                if( hit.   find( f.hash() ) == hit.end() )
-                    hit.emplace( f.hash() );
-                else return;
-                fs << "        " // Library reference per child.
-                   << f.toBuildID()
-                   << " /* "
-                   << f.filename();
-                fs << " */,\n";
-              }
-            );
-            fs << string( "      );\n" )
-               << "      name = Plugins;\n"
-               << "      sourceTree = \"<group>\";\n";
-            fs << "    };\n";
-          }
 
           //--------------------------------------------------------------------
           // Resources group.

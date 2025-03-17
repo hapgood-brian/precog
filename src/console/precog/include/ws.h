@@ -56,8 +56,6 @@
               }
 
               friend string e_saferef( const File& f ){
-                if( f.isPlugin() )
-                  return f.toPluginRef();
                 if( f.isEmbed() )
                   return f.toEmbedRef();
                 const auto& x=filerefs[ f.m_uFileRef ];
@@ -149,7 +147,6 @@
             }
             File( const File& f )
                 : string( static_cast<const string&>( f )){
-              m_sPluginRef = f.m_sPluginRef;
               m_sEmbedRef  = f.m_sEmbedRef;
               m_sBuildID2  = f.m_sBuildID2;
               m_uFileRef   = f.m_uFileRef;
@@ -163,15 +160,14 @@
 
           private:
 
-            e_var_string(  PluginRef ) = string::streamId();
-            e_var_string(  EmbedRef  ) = string::streamId();
-            e_var_string(  BuildID2  ) = string::streamId();
-            e_var_string(  BuildID   ) = string::streamId();
-            e_var_string(  EmbedID   ) = string::streamId();
-            e_var_string(  CopyID    ) = string::streamId();
-            e_var( u64, u, FileRef   ) = 0ull;
-            e_var_string(  RefMSVC   );
-            e_var_string(  Where     );
+            e_var_string(  EmbedRef ) = string::streamId();
+            e_var_string(  BuildID2 ) = string::streamId();
+            e_var_string(  BuildID  ) = string::streamId();
+            e_var_string(  EmbedID  ) = string::streamId();
+            e_var_string(  CopyID   ) = string::streamId();
+            e_var( u64, u, FileRef  ) = 0ull;
+            e_var_string(  RefMSVC  );
+            e_var_string(  Where    );
             e_var_bits(    Flags
               , bPlugin:1
               , bPublic:1
@@ -331,7 +327,6 @@
 
             e_var(         Files, v, PrivateHeaders  );
             e_var(         Files, v, PublicHeaders   );
-            e_var(         Files, v, PluginFiles     );
             e_var(         Files, v, PublicRefs      );
             e_var(         Files, v, EmbedFiles      );
             e_var_mutable( Files, v, LibFiles        );// Frozen: do not use!

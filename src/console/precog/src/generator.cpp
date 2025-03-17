@@ -557,13 +557,13 @@ using namespace fs;
                 string plugins( lua_getCleansedID( L, -1 ));
                 strings paths( plugins.splitAtCommas() );
                 paths.foreach(
-                  [&]( const auto& plugin ){
-                    e_msgf( "Found plugin: %s", ccp( plugin ));
-                    Workspace::File f( plugin );
-                    f.setPluginRef( plugin );
+                  [&]( const auto& pluginID ){
+                    e_msgf( "Found plugin: %s", ccp( pluginID ));
+                    Workspace::File f( pluginID );
+                    f.setEmbedID( pluginID );
                     f.toFlags()->bPlugin = 1;
                     f.toFlags()->bSign   = 1;
-                    p.toPluginFiles().push( f );
+                    p.toEmbedFiles().push( f );
                   }
                 );
                 break;
