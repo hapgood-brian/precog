@@ -47,8 +47,6 @@
             //Friends:{                           |
 
               friend string e_forceref( const File& f ){
-                if( f.isEmbed() )
-                  return f.toEmbedRef();
                 auto x = filerefs[ f.m_uFileRef ];
                 if( !x.empty() )
                   return x;

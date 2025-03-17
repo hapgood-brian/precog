@@ -29,6 +29,11 @@ using namespace fs;
   e_extends( Workspace::Xcode );
 
 //}:                                              |
+//Defines:{                                       |
+
+  #define var auto
+
+//}:                                              |
 //Statics:{                                       |
 
   namespace{
@@ -490,15 +495,17 @@ using namespace fs;
           , const File&   file )const{
         // Note _path must end with /
         auto sourceTree( tree );
-        static std::set<u64>_;
         string key;
-        key.catf( "%s:%s"
+        key.catf( "%s:%s_plugin" // Must differ actually!
           , ccp( file )
           , ccp( file.toWhere() ));
-        if( _.find(    key.hash() ) != _.end() )
-            _.emplace( key.hash() );
-        else return;
-        const auto forcedRef = e_forceref( file );
+        #if 0 // Keeping this for reference.
+          static std::set<u64>___;
+          if( ___.find(    key.hash() ) != ___.end() )
+              ___.emplace( key.hash() );
+          else return;
+        #endif
+        const auto forcedRef = file.toBuildID();
         fs << "    "
            << forcedRef
            << " /* "
@@ -524,30 +531,21 @@ using namespace fs;
           }
         }else{
           if( f.toWhere().empty() ){
-           switch( osextra.hash() ){
-              case".framework"_64:
-                [[fallthrough]];
-              case".bundle"_64:
-                [[fallthrough]];
-              case".dylib"_64:
-                [[fallthrough]];
-              case".a"_64:/**/{
-                string out;
-                const auto paths = toFindLibsPaths().splitAtCommas();
-                auto it = paths.getIterator();
-                while( it ){
-                  if( e_fexists( *it + "/" + f )){
-                    sourceTree = "SOURCE_ROOT";
-                    f.setWhere( "../"
-                      + *it
-                      + "/"
-                      + f );
-                    break;
-                  }
-                  ++it;
-                }
+            if( osextra != ".bundle"_64 )
+              e_break( "Only bundles may be plugins on macOS." );
+            string out;
+            const auto paths = toFindLibsPaths().splitAtCommas();
+            auto it = paths.getIterator();
+            while( it ){
+              if( e_fexists( *it + "/" + f )){
+                sourceTree = "SOURCE_ROOT";
+                f.setWhere( "../"
+                  + *it
+                  + "/"
+                  + f );
                 break;
               }
+              ++it;
             }
           }
           fs << "path = "
@@ -596,8 +594,10 @@ using namespace fs;
                     ? f.toWhere().os().ext().tolower()
                     : f.os().ext().tolower() );
                   switch( ext.hash() ){
-                    case".framework"_64: [[fallthrough]];
-                    case".bundle"_64:    [[fallthrough]];
+                    case".framework"_64:
+                      [[fallthrough]];
+                    case".bundle"_64:
+                      [[fallthrough]];
                     case".dylib"_64:
                       // No support on iOS for frameworks, bundles, dylibs,
                       // or text-based-dylibs.
@@ -1661,20 +1661,45 @@ using namespace fs;
         auto& T = *const_cast<self*>( this );
 
         //----------------------------------------------------------------------
+        // Do the plugins first; I take all libs in plugins files vector. Will
+        // add some validation here, so if someone tries passing down a plugin
+        // that's a framework or a dylib, it'll be prevented. I could probably
+        // do that at a much earlier stage, like when the file is added or not.
+        //----------------------------------------------------------------------
+
+        auto files( toPluginFiles() );
+        const var n = files.size();
+        if( n ){
+          writeFileReferencePlugins( out
+            , files
+            , "wrapper.cfbundle"
+            , "explicitFileType"
+            , "BUILT_PRODUCTS_DIR" );
+          if( e_getCvar( bool, "VERBOSE_OUT" )){
+            //TODO: Wrap with a -v verbose message switch.
+            e_msgf(// Just print a verbose message.
+              "  %u plugins copied."
+              , n
+            );
+          }
+        }
+
+        //----------------------------------------------------------------------
         // We need to take everything in m_aSources[ Type::kPlatform ] and make
         // the PBXFileReference section statement like the next. That should
-        // fix every- thing to do with linking against system frameworks etc.
+        // fix everything to do with linking against system frameworks etc.
         // Anything in said m_aSources[ i ].
         //----------------------------------------------------------------------
 
-        Files files;
+        files.clear();
         const auto& linksWith = toLinkWith().splitAtCommas();
         linksWith.foreach(
           [&]( const auto& lw ){
             File fi( lw );
             if( !fi.isSystemFramework() )
               return;
-            const auto path=string( "/Applications/Xcode.app/Contents/Developer/Platforms/"
+            const auto path=string(
+              "/Applications/Xcode.app/Contents/Developer/Platforms/"
               "MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/"
               "Library/Frameworks/" ) + lw +
               ".framework";
@@ -1938,34 +1963,6 @@ using namespace fs;
         // libs including ".framework", ".dylib", and ".a".
         //----------------------------------------------------------------------
 
-        toPluginFiles().foreach(
-          [&]( const auto& f ){
-            Files fileVector{ f };
-            switch( f.ext().tolower().hash() ){
-              case".framework"_64:
-                break;
-              case".bundle"_64:/**/{
-                writeFileReferencePlugins( out
-                  , fileVector
-                  , "wrapper.cfbundle"
-                  , "explicitFileType"
-                  , "BUILT_PRODUCTS_DIR" );
-                break;
-              }
-              case".dylib"_64:/**/{
-                writeFileReferencePlugins( out
-                  , fileVector
-                  , "\"compiled.mach-o.dylib\""
-                  , "explicitFileType"
-                  , "BUILT_PRODUCTS_DIR" );
-                break;
-              }
-              case".a"_64:/**/{
-                break;
-              }
-            }
-          }
-        );
         toEmbedFiles().foreach(
           [&]( const auto& f ){
             Files fileVector{ f };
@@ -2540,7 +2537,7 @@ using namespace fs;
                 // Embedding and copying libraries.
                 //--------------------------------------------------------------
 
-                e_msgf( "  Plugging %s", ccp( f.base() ));
+                e_msgf( "  Plugging in %s", ccp( f.base() ));
                 const auto& ext = f.ext().tolower();
                 const auto hash = ext.hash();
                 out << "    "
