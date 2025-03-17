@@ -2976,6 +2976,46 @@ using namespace fs;
                , const string& label ){
 
               //----------------------------------------------------------------
+              // Frameworks group.
+              //----------------------------------------------------------------
+
+              // Write out the Group SID first.
+              fs << "    "
+                 << m_sFrameworkGroup
+                 << " /* Frameworks */ = {\n"
+                 << "      isa = PBXGroup;\n"
+                 << "      children = (\n";
+              // Collect everything we want to embed.
+              Files collection;
+              inSources( Type::kPlatform ).foreach(
+                [&]( const auto& fi ){
+                  collection.push( fi );
+                }
+              );
+              collection.sort(
+                []( const auto& a, const auto& b ){
+                  return( a.len() > b.len() );
+                }
+              );
+              hashmap<u64,s8>hit;
+              collection.foreach(
+                [&]( const auto& f ){
+                  if( !hit.find( f.hash() ))
+                    hit.set( f.hash(), 1 );
+                  else return;
+                  fs << "        " // Library reference per child.
+                     << e_saferef( f )
+                     << " /* "
+                     << f.filename();
+                  fs << " */,\n";
+                }
+              );
+              fs << string( "      );\n" )
+                 << "      name = Frameworks;\n"
+                 << "      sourceTree = \"<group>\";\n";
+              fs << "    };\n";
+
+              //----------------------------------------------------------------
               // Products group.
               //----------------------------------------------------------------
 
@@ -3048,45 +3088,6 @@ using namespace fs;
                 fs << "      sourceTree = \"<group>\";\n";
                 fs << "    };\n";
               }
-
-              //----------------------------------------------------------------
-              // Frameworks group.
-              //----------------------------------------------------------------
-
-              // Static libraries cannot embed anything close.
-              if( toBuild().tolower().hash() != "static"_64 ){
-                // Write out the Group SID first.
-                fs << "    "
-                   << m_sFrameworkGroup
-                   << " /* Frameworks */ = {\n"
-                   << "      isa = PBXGroup;\n"
-                   << "      children = (\n";
-                // Collect everything we want to embed.
-                Files collection;
-                inSources( Type::kPlatform ).foreach( [&]( const auto& fi ){ collection.push( fi ); });
-                collection.sort(
-                  []( const auto& a, const auto& b ){
-                    return( a < b );
-                  }
-                );
-                hashmap<u64,s8>hit;
-                collection.foreach(
-                  [&]( const auto& f ){
-                    if( !hit.find( f.hash() ))
-                      hit.set( f.hash(), 1 );
-                    else return;
-                    fs << "        " // Library reference per child.
-                       << e_saferef( f )
-                       << " /* "
-                       << f.filename();
-                    fs << " */,\n";
-                  }
-                );
-                fs << string( "      );\n" )
-                   << "      name = Frameworks;\n"
-                   << "      sourceTree = \"<group>\";\n";
-                fs << "    };\n";
-              }
             }
           );
 
@@ -3094,8 +3095,7 @@ using namespace fs;
           // Place plugins in the Plugins group.
           //--------------------------------------------------------------------
 
-          // Static libraries cannot embed anything close.
-          if( toBuild().tolower().hash() != "static"_64 ){
+          if( !toPluginFiles().empty() ){
             // Write out the Group SID first.
             fs << "    "
                << m_sPluginsGroup
@@ -3106,14 +3106,14 @@ using namespace fs;
             Files plugins( toPluginFiles() );
             plugins.sort(
               []( const auto& a, const auto& b ){
-                return( a < b );
+                return( a.len() > b.len() );
               }
             );
             std::set<u64>hit;
             plugins.foreach(
               [&]( const auto& f ){
-                if( hit.find( f.hash() ) == hit.end() )
-                  hit.emplace( f.hash() );
+                if( hit.   find( f.hash() ) == hit.end() )
+                    hit.emplace( f.hash() );
                 else return;
                 fs << "        " // Library reference per child.
                    << f.toBuildID()
@@ -3123,7 +3123,7 @@ using namespace fs;
               }
             );
             fs << string( "      );\n" )
-               << "      name = Frameworks;\n"
+               << "      name = Plugins;\n"
                << "      sourceTree = \"<group>\";\n";
             fs << "    };\n";
           }
