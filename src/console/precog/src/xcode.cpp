@@ -1233,9 +1233,9 @@ using namespace fs;
         // THIS FUNCTION IS FROZEN: "when you're heart's not broken"
         void Workspace::Xcode::writePBXFileReferenceLibrary( Writer& out )const{
 
-          //----------------------------------------------------------------------
+          //--------------------------------------------------------------------
           // Walk all the linker candidates including frameworks and .tbd's.
-          //----------------------------------------------------------------------
+          //--------------------------------------------------------------------
 
           Files files;
           if( !toLinkWith().empty() ){
@@ -1245,9 +1245,9 @@ using namespace fs;
                 if( cref.empty() )
                   return;
 
-                //----------------------------------------------------------------
+                //--------------------------------------------------------------
                 // Detect other product libs and add them to products vector.
-                //----------------------------------------------------------------
+                //--------------------------------------------------------------
 
                 switch( cref.ext().tolower().hash() ){
                   case".dylib"_64:
@@ -1274,21 +1274,21 @@ using namespace fs;
                   }
                 }
 
-                //****************************************************************
+                //**************************************************************
 
-                //----------------------------------------------------------------
+                //--------------------------------------------------------------
                 // Link against all library types, including .tbd, .a and .dylib.
-                //----------------------------------------------------------------
+                //--------------------------------------------------------------
 
                 static const auto xcodeExists =
                     e_dexists( "/Applications/Xcode.app" );
                 const auto& ext = cref.ext().tolower();
                 if( xcodeExists ){
 
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
                   // Test whether intent was to link with text-based-dylibs among
                   // the plethora of Mac based library formats.
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
 
                   auto isTBD = true;
                   auto tbd = string();
@@ -1321,9 +1321,9 @@ using namespace fs;
                     }
                   }
 
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
                   // Simple local function to set where and setup embed and sign.
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
 
                   static const auto& finalize=[](
                         const auto& library
@@ -1337,9 +1337,9 @@ using namespace fs;
                     } return f;
                   };
 
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
                   // Try and find the library in one of all the many locations.
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
 
                   if( isTBD )/* only .framework / .tbd */{
                     const auto& targets = getTargets();
@@ -1402,9 +1402,9 @@ using namespace fs;
               }
             );
 
-            //--------------------------------------------------------------------
+            //------------------------------------------------------------------
             // Write out the file and embedding line.
-            //--------------------------------------------------------------------
+            //------------------------------------------------------------------
 
             const auto embedAndSign = toEmbedAndSign();
             const auto& vectorsSign = embedAndSign
@@ -1448,17 +1448,17 @@ using namespace fs;
                   );
                   if( f.isEmbed() ){
 
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
                     // Bail conditions.
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
 
                     const auto isHex = f.toBuildID().is_hex();
                     if( isHex )
                       return;
 
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
                     // Reference in frameworks.
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
 
                     out << "    "
                       + f.toBuildID()
@@ -1491,9 +1491,9 @@ using namespace fs;
                         break;
                     }
 
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
                     // Local lambda function to add embedding syntax.
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
 
                     const auto& stayOnTarget=[&]( const string& target ){
                       if( target.hash() == "ios"_64 ){
@@ -1540,9 +1540,9 @@ using namespace fs;
                       }
                     };
 
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
                     // Reference in embedded frameworks.
-                    //------------------------------------------------------------
+                    //----------------------------------------------------------
 
                     const auto& targets = getTargets();
                     auto it = targets.getIterator();
@@ -1553,9 +1553,9 @@ using namespace fs;
                     return;
                   }
 
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
                   // Handle non-embeddable targets.
-                  //--------------------------------------------------------------
+                  //------------------------------------------------------------
 
                   const auto& targets = getTargets();
                   auto it = targets.getIterator();
@@ -2130,8 +2130,10 @@ using namespace fs;
                 );
                 File f( lib );
                 const auto _lib = f.toWhere().os();
-                const auto _ext = _lib.ext().tolower();
-                const auto hash = _ext.hash();
+                if( _lib.empty() )
+                  e_break( "Empty string encountered!" );
+                const auto _ext =_lib.ext().tolower();
+                const auto hash =_ext.hash();
                 string fileType;
                 if( target == "macos"_64 ){
                   switch( hash ){
@@ -2151,7 +2153,7 @@ using namespace fs;
                       fileType = "archive.ar";
                       break;
                     default:
-                      break;
+                      e_break( e_xfs( "Unhandled file type (%s)!", ccp( _ext )));
                   }
                 }else if( target == "ios" ){
                   switch( hash ){
@@ -2170,9 +2172,9 @@ using namespace fs;
                 }
                 out << "    " + e_saferef( f );
                 if( !isProduct ){
-                  out << " = {isa = PBXFileReference; lastKnownFileType = ";
+                  out << " /* " << _lib << " */ = {isa = PBXFileReference; lastKnownFileType = ";
                 }else{
-                  out << " = {isa = PBXFileReference; explicitFileType = ";
+                  out << " /* " << _lib << " */ = {isa = PBXFileReference; explicitFileType = ";
                 }
                 out << fileType
                     << "; name = "
@@ -2546,8 +2548,8 @@ using namespace fs;
                     << f.toCopyID()
                     << " /* "
                     << f.filename()
-                    << " in Plugins */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileRef()
+                    << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
+                    << f.toBuildID()
                     << " /* "
                     << f.filename();
                 out << " */; };";
@@ -2577,7 +2579,8 @@ using namespace fs;
           // Now embed all the library references.
           //--------------------------------------------------------------------
 
-          { const_cast<Xcode*>( this )->toEmbedFiles().foreach(
+          { const_cast<Xcode*>( this )->
+            toEmbedFiles().foreach(
               [&]( File& f ){
                 if( !hits.find( f.hash() ))
                   hits.set( f.hash(), 1 );

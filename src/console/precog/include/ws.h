@@ -58,6 +58,8 @@
               }
 
               friend string e_saferef( const File& f ){
+                if( f.isPlugin() )
+                  return f.toPluginRef();
                 if( f.isEmbed() )
                   return f.toEmbedRef();
                 const auto& x=filerefs[ f.m_uFileRef ];
@@ -97,10 +99,11 @@
               void setEmbed(  const bool pub ){ m_tFlags->bEmbed  = pub; }
               void setSign(   const bool pub ){ m_tFlags->bSign   = pub; }
 
-              bool isPublic()const{ return( 1 == m_tFlags->bPublic ); }
-              bool isStrip() const{ return( 1 == m_tFlags->bStrip  ); }
-              bool isEmbed() const{ return( 1 == m_tFlags->bEmbed  ); }
-              bool isSign()  const{ return( 1 == m_tFlags->bSign   ); }
+              bool isPlugin() const{ return( 1 == m_tFlags->bPlugin  ); }
+              bool isPublic() const{ return( 1 == m_tFlags->bPublic  ); }
+              bool isStrip()  const{ return( 1 == m_tFlags->bStrip   ); }
+              bool isEmbed()  const{ return( 1 == m_tFlags->bEmbed   ); }
+              bool isSign()   const{ return( 1 == m_tFlags->bSign    ); }
 
               virtual String& cat( ccp p, const u64 n )override{
                 string::cat( p, n );
@@ -148,28 +151,31 @@
             }
             File( const File& f )
                 : string( static_cast<const string&>( f )){
-              m_sEmbedRef = f.m_sEmbedRef;
-              m_sBuildID2 = f.m_sBuildID2;
-              m_uFileRef  = f.m_uFileRef;
-              m_sBuildID  = f.m_sBuildID;
-              m_sEmbedID  = f.m_sEmbedID;
-              m_tFlags    = f.m_tFlags;
-              m_sWhere    = f.m_sWhere;
+              m_sPluginRef = f.m_sPluginRef;
+              m_sEmbedRef  = f.m_sEmbedRef;
+              m_sBuildID2  = f.m_sBuildID2;
+              m_uFileRef   = f.m_uFileRef;
+              m_sBuildID   = f.m_sBuildID;
+              m_sEmbedID   = f.m_sEmbedID;
+              m_tFlags     = f.m_tFlags;
+              m_sWhere     = f.m_sWhere;
             }
           ~ File() = default;
             File() = default;
 
           private:
 
-            e_var_string(  EmbedRef ) = string::streamId();
-            e_var_string(  BuildID2 ) = string::streamId();
-            e_var_string(  BuildID  ) = string::streamId();
-            e_var_string(  EmbedID  ) = string::streamId();
-            e_var_string(  CopyID   ) = string::streamId();
-            e_var( u64, u, FileRef  ) = 0ull;
-            e_var_string(  RefMSVC  );
-            e_var_string(  Where    );
+            e_var_string(  PluginRef ) = string::streamId();
+            e_var_string(  EmbedRef  ) = string::streamId();
+            e_var_string(  BuildID2  ) = string::streamId();
+            e_var_string(  BuildID   ) = string::streamId();
+            e_var_string(  EmbedID   ) = string::streamId();
+            e_var_string(  CopyID    ) = string::streamId();
+            e_var( u64, u, FileRef   ) = 0ull;
+            e_var_string(  RefMSVC   );
+            e_var_string(  Where     );
             e_var_bits(    Flags
+              , bPlugin:1
               , bPublic:1
               , bStrip:1
               , bEmbed:1

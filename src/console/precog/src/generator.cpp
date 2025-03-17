@@ -560,7 +560,9 @@ using namespace fs;
                   [&]( const auto& plugin ){
                     e_msgf( "Found plugin: %s", ccp( plugin ));
                     Workspace::File f( plugin );
-                         f.toFlags()->bSign = 1;
+                    f.setPluginRef( plugin );
+                    f.toFlags()->bPlugin = 1;
+                    f.toFlags()->bSign   = 1;
                     p.toPluginFiles().push( f );
                   }
                 );
