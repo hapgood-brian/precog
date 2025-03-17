@@ -1871,10 +1871,9 @@ using namespace fs;
                 string embedRef( e_saferef( f ));
                 toEmbedFiles().foreachs(
                   [&]( const auto& _f ){
-                    if( _f.toEmbedRef().empty() )
+                    if( !_f.isEmbed() )
                       return true;
-                    const_cast<File&>( f ).setEmbedRef(
-                      _f.toEmbedRef() );
+                    const_cast<File&>( f ).setEmbedRef( embedRef );
                     return false;
                   }
                 );
