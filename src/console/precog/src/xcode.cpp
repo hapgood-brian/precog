@@ -2752,9 +2752,10 @@ using namespace fs;
             fs << ".entitlements */,\n";
           }
           fs << "        " + m_sFrameworkGroup + " /* Frameworks */,\n"
-             << "        " + m_sProductsGroup  + " /* Products */,\n"
-             << "        " + m_sPluginsGroup   + " /* Plugins */,\n"
-             << "        " + m_sCodeGroup      + " /* Code */,\n"
+             << "        " + m_sProductsGroup  + " /* Products */,\n";
+          if( !toEmbedFiles().empty() )
+            fs << "        " + m_sPluginsGroup   + " /* Plugins */,\n";
+          fs << "        " + m_sCodeGroup      + " /* Code */,\n"
              << "      );\n"
              << "      sourceTree = \"<group>\";\n"
              << "    };\n";
@@ -2814,36 +2815,38 @@ using namespace fs;
               //----------------------------------------------------------------
 
               // Write out the Group SID first.
-              fs << "    "
-                 << m_sPluginsGroup
-                 << " /* Plugins */ = {\n"
-                 << "      isa = PBXGroup;\n"
-                 << "      children = (\n";
-              // Collect everything we want to embed.
-              Files plugins;
-              plugins.pushVector( toEmbedFiles() );
-              plugins.sort(
-                []( const auto& a, const auto& b ){
-                  return( a.len() > b.len() );
-                }
-              );
-              std::set<u64>__;
-              plugins.foreach(
-                [&]( const auto& f ){
-                  if(__.find(    f.hash() )==__.end() )
-                     __.emplace( f.hash() );
-                  else return;
-                  fs << "        " // Library reference per child.
-                     << e_forceref( f )
-                     << " /* [e_forceref] "
-                     << f.filename();
-                  fs << " */,\n";
-                }
-              );
-              fs << string( "      );\n" )
-                 << "      name = Plugins;\n"
-                 << "      sourceTree = \"<group>\";\n";
-              fs << "    };\n";
+              if( !toEmbedFiles().empty() ){
+                fs << "    "
+                   << m_sPluginsGroup
+                   << " /* Plugins */ = {\n"
+                   << "      isa = PBXGroup;\n"
+                   << "      children = (\n";
+                // Collect everything we want to embed.
+                Files plugins;
+                plugins.pushVector( toEmbedFiles() );
+                plugins.sort(
+                  []( const auto& a, const auto& b ){
+                    return( a.len() > b.len() );
+                  }
+                );
+                std::set<u64>__;
+                plugins.foreach(
+                  [&]( const auto& f ){
+                    if(__.find(    f.hash() )==__.end() )
+                       __.emplace( f.hash() );
+                    else return;
+                    fs << "        " // Library reference per child.
+                       << e_forceref( f )
+                       << " /* [e_forceref] "
+                       << f.filename();
+                    fs << " */,\n";
+                  }
+                );
+                fs << string( "      );\n" )
+                   << "      name = Plugins;\n"
+                   << "      sourceTree = \"<group>\";\n";
+                fs << "    };\n";
+              }
 
               //----------------------------------------------------------------
               // Products group.
