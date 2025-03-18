@@ -2412,7 +2412,7 @@ using namespace fs;
                       << " /* [BuildID2 (EmbedFiles)] "
                       << f.filename()
                       << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                      << f.toBuildID()//f.toEmbedRef()
+                      << f.toBuildID()
                       << " /* [BuildID] "
                       << f.filename();
              else out << "    "
