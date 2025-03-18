@@ -833,7 +833,7 @@ using namespace fs;
                     return;
                   fs << "        ";
                   fs << f.toBuildID();
-                  fs << " /* "
+                  fs << " /* [BuildID] "
                     + f.filename()
                     + " in CopyFiles */,\n"
                   ;
@@ -852,7 +852,7 @@ using namespace fs;
               , [&]( const File& f ){
                   fs << "        ";
                   fs << f.toBuildID();
-                  fs << " /* "
+                  fs << " /* [BuildID] "
                     + f.filename()
                     + " in CopyFiles */,\n"
                   ;
@@ -893,7 +893,7 @@ using namespace fs;
                         break;
                       fs << "        ";
                       fs << f.toBuildID2()
-                         << " /* "
+                         << " /* [BuildID2] "
                          << f.filename()
                          << " in Embed Frameworks */,\n";
                       break;
@@ -920,7 +920,7 @@ using namespace fs;
                       return;
                     fs << "        ";
                     fs << f.toBuildID2();
-                    fs << " /* " + f.filename();
+                    fs << " /* [BuildID2] " + f.filename();
                     fs << " in CopyFiles */,\n";
                   }
                 }
@@ -1284,7 +1284,6 @@ using namespace fs;
                 if( f.empty() )
                   return;
                 m_vLibFiles.push( f );
-                const auto& wt = f.toWhere( );
                 if( libCache.find( f.hash() ))
                   return;
                 libCache.set( f.hash(), 1 );
@@ -1311,7 +1310,7 @@ using namespace fs;
 
                   out << "    "
                     + f.toBuildID()
-                    + " /* "
+                    + " /* [BuildID] "
                     + f.filename();
                   switch( ext ){
                     case".framework"_64:
@@ -1364,7 +1363,7 @@ using namespace fs;
                     }
                     out << "    "
                       + f.toEmbedID()
-                      + " /* "
+                      + " /* [EmbedID] "
                       + f.filename();
                     if( ext == ".framework"_64 ){
                       out << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = ";
@@ -1423,7 +1422,7 @@ using namespace fs;
                       case".a"_64:/**/{
                         out << "    "
                           + f.toBuildID()
-                          + " /* "
+                          + " /* [BuildID] "
                           + f.filename();
                         break;
                       }
@@ -1487,7 +1486,7 @@ using namespace fs;
                       break;
                   }
                   out << e_saferef( f )
-                    + " /* "
+                    + " /* [e_saferef] "
                     + f.filename()
                     + " */; };\n";
                   ++it;
@@ -1575,7 +1574,7 @@ using namespace fs;
                 );
                 out << "    "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << file
                     << " in Frameworks"
                     << " */ = "
@@ -1776,7 +1775,7 @@ using namespace fs;
                 ext << ".framework";
                 out << "    "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << file
                     << " in Frameworks"
                     << " */ = "
@@ -1903,7 +1902,7 @@ using namespace fs;
             const auto& osWhere    = f.toWhere().os();
             out << "    "
                 << e_saferef( f )
-                << " /* "
+                << " /* e_saferef] "
                 << f.os().filename()
                 << " */ = {isa = PBXFileReference; lastKnownFileType = "
                 << lastKnownFileType
@@ -2008,7 +2007,7 @@ using namespace fs;
                 }
                 out << "    " + e_saferef( f );
                 if( !isProduct ){
-                  out << " /* " << _lib << " */ = {isa = PBXFileReference; lastKnownFileType = ";
+                  out << " /* [e_saferef] " << _lib << " */ = {isa = PBXFileReference; lastKnownFileType = ";
                 }else{
                   out << " /* " << _lib << " */ = {isa = PBXFileReference; explicitFileType = ";
                 }
@@ -2400,8 +2399,8 @@ using namespace fs;
                         << " /* [BuildID (EmbedFiles)] "
                         << f.filename()
                         << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                        << e_saferef( f )
-                        << " /* [e_saferef] "
+                        << f.toBuildID2()
+                        << " /* [BuildID2] "
                         << f.filename();
                     out << " */; };\n";
                     break;
@@ -2413,16 +2412,16 @@ using namespace fs;
                       << " /* [BuildID2 (EmbedFiles)] "
                       << f.filename()
                       << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                      << f.toEmbedRef()
-                      << " /* [EmbedRef] "
+                      << f.toBuildID()//f.toEmbedRef()
+                      << " /* [BuildID] "
                       << f.filename();
              else out << "    "
                       << f.toBuildID2()
                       << " /* [buildID2] "
                       << f.filename()
                       << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
-                      << f.toEmbedRef()
-                      << " /* [EmbedRef] "
+                      << f.toBuildID()
+                      << " /* [BuildID] "
                       << f.filename();
                 out << " */;";
                 auto stripper = false;
@@ -2800,13 +2799,53 @@ using namespace fs;
                   else return;
                   fs << "        " // Library reference per child.
                      << e_saferef( f )
-                     << " /* "
+                     << " /* [e_saferef] "
                      << f.filename();
                   fs << " */,\n";
                 }
               );
               fs << string( "      );\n" )
                  << "      name = Frameworks;\n"
+                 << "      sourceTree = \"<group>\";\n";
+              fs << "    };\n";
+
+              //----------------------------------------------------------------
+              // Plugins group.
+              //----------------------------------------------------------------
+
+              // Write out the Group SID first.
+              fs << "    "
+                 << m_sPluginsGroup
+                 << " /* Plugins */ = {\n"
+                 << "      isa = PBXGroup;\n"
+                 << "      children = (\n";
+              // Collect everything we want to embed.
+              Files plugins;
+              toEmbedFiles().foreach(
+                [&]( const var& f ){
+                  plugins.push( f );
+                }
+              );
+              plugins.sort(
+                []( const auto& a, const auto& b ){
+                  return( a.len() > b.len() );
+                }
+              );
+              std::set<u64>___;
+              plugins.foreach(
+                [&]( const auto& f ){
+                  if(___.find( f.hash() )==___.end() )
+                    ___.emplace( f.hash() );
+                  else return;
+                  fs << "        " // Library reference per child.
+                     << f.toBuildID()
+                     << " /* [BuildID] "
+                     << f.filename();
+                  fs << " */,\n";
+                }
+              );
+              fs << string( "      );\n" )
+                 << "      name = Plugins;\n"
                  << "      sourceTree = \"<group>\";\n";
               fs << "    };\n";
 
