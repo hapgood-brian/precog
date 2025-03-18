@@ -55,13 +55,6 @@
                 return x;
               }
 
-              friend string e_saferef( const File& f ){
-                const auto& x=filerefs[ f.m_uFileRef ];
-                if( x.empty() )
-                  e_break( "Failure to lookup file!" );
-                return x;
-              }
-
               friend string e_rawref( const File& f ){
                 return filerefs[ f.m_uFileRef ];
               }
@@ -152,6 +145,7 @@
               m_sEmbedID   = f.m_sEmbedID;
               m_sRefMSVC   = f.m_sRefMSVC;
               m_sCopyID    = f.m_sCopyID;
+              m_sFileID    = f.m_sFileID;
               m_sWhere     = f.m_sWhere;
               m_tFlags     = f.m_tFlags;
             }
@@ -165,6 +159,7 @@
             e_var_string(  BuildID  ) = string::streamId();
             e_var_string(  EmbedID  ) = string::streamId();
             e_var_string(  CopyID   ) = string::streamId();
+            e_var_string(  FileID   ) = string::streamId();
             e_var( u64, u, FileRef  ) = 0ull;
             e_var_string(  RefMSVC  );
             e_var_string(  Where    );
