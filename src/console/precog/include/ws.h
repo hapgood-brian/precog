@@ -138,8 +138,6 @@
             }
             File( const File& f )
                 : string( static_cast<const string&>( f )){
-              m_sEmbedRef  = f.m_sEmbedRef;
-              m_sBuildID2  = f.m_sBuildID2;
               m_uFileRef   = f.m_uFileRef;
               m_sBuildID   = f.m_sBuildID;
               m_sEmbedID   = f.m_sEmbedID;
@@ -154,15 +152,13 @@
 
           private:
 
-            e_var_string(  EmbedRef ) = string::streamId();
-            e_var_string(  BuildID2 ) = string::streamId();
-            e_var_string(  BuildID  ) = string::streamId();
-            e_var_string(  EmbedID  ) = string::streamId();
-            e_var_string(  CopyID   ) = string::streamId();
-            e_var_string(  FileID   ) = string::streamId();
-            e_var( u64, u, FileRef  ) = 0ull;
-            e_var_string(  RefMSVC  );
-            e_var_string(  Where    );
+            e_var_string(  BuildID ) = string::streamId();
+            e_var_string(  EmbedID ) = string::streamId();
+            e_var_string(  CopyID  ) = string::streamId();
+            e_var_string(  FileID  ) = string::streamId();
+            e_var( u64, u, FileRef ) = 0ull;
+            e_var_string(  RefMSVC );
+            e_var_string(  Where   );
             e_var_bits(    Flags
               , bPlugin:1
               , bPublic:1

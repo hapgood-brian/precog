@@ -1732,17 +1732,17 @@ using namespace fs;
                     return false;
                   }
                 );
-                const auto& embedRef( f.toFileID());
+                const auto& fileID( f.toFileID());
                 toEmbedFiles().foreachs(
                   [&]( const auto& _f ){
                     if( !_f.isEmbed() )
                       return true;
-                    const_cast<File&>( f ).setEmbedRef( embedRef );
+                    const_cast<File&>( f ).setFileID( fileID );
                     return false;
                   }
                 );
                 out << "    "
-                    << embedRef
+                    << fileID
                     << " /* [FileID] "
                     << file
                     << " in Embed Frameworks"
@@ -2416,7 +2416,7 @@ using namespace fs;
                       << " /* [FileID] "
                       << f.filename();
              else out << "    "
-                      << f.toBuildID2()
+                      << f.toBuildID()
                       << " /* [buildID] "
                       << f.filename()
                       << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
