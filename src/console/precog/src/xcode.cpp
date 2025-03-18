@@ -981,18 +981,44 @@ using namespace fs;
                  << "      files = (\n";
               Files files;
               inSources( Type::kCpp ).foreach(
-                [&]( const auto& fi ){ files.push( fi ); });
+                [&]( const auto& f ){
+                  if( f.empty() )
+                    return;
+                  files.push( f );
+                }
+              );
               inSources( Type::kMm ).foreach(
-                [&]( const auto& fi ){ files.push( fi ); });
+                [&]( const auto& f ){
+                  if( f.empty() )
+                    return;
+                  files.push( f );
+                }
+              );
               inSources( Type::kM ).foreach(
-                [&]( const auto& fi ){ files.push( fi ); });
+                [&]( const auto& f ){
+                  if( f.empty() )
+                    return;
+                  files.push( f );
+                }
+              );
               inSources( Type::kC ).foreach(
-                [&]( const auto& fi ){ files.push( fi ); });
+                [&]( const auto& f ){
+                  if( f.empty() )
+                    return;
+                  files.push( f );
+                }
+              );
               files.foreach(
                 [&]( const File& f ){
                   if( f.empty() )
                     return;
-                  fs << "        " + f.toBuildID() + " /* " + f.filename() + " in Sources */,\n";
+                  if( f.toBuildID().empty() )
+                    e_break( "You've found a bug! Nil build ID." );
+                  fs << "        "
+                     << f.toBuildID()
+                     << " /* [BuildID] "
+                     << f.filename()
+                     << " in Sources */,\n";
                 }
               );
               fs << "      );\n";
@@ -1902,7 +1928,7 @@ using namespace fs;
             const auto& osWhere    = f.toWhere().os();
             out << "    "
                 << f.toFileID()
-                << " /* e_saferef] "
+                << " /* [FileID] "
                 << f.os().filename()
                 << " */ = {isa = PBXFileReference; lastKnownFileType = "
                 << lastKnownFileType
@@ -3033,13 +3059,17 @@ using namespace fs;
                 + "      isa = PBXGroup;\n"
                 + "      children = (\n";
             files.clear();
-            inSources( Type::kCpp ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kMm  ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kC   ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kM   ).foreach( [&]( const auto& fi ){ files.push( fi ); });
+            inSources( Type::kCpp ).foreach(
+              [&]( const auto& fi ){ files.push( fi ); });
+            inSources( Type::kMm ).foreach(
+              [&]( const auto& fi ){ files.push( fi ); });
+            inSources( Type::kC ).foreach(
+              [&]( const auto& fi ){ files.push( fi ); });
+            inSources( Type::kM ).foreach(
+              [&]( const auto& fi ){ files.push( fi ); });
             files.sort(
               []( const auto& a, const auto& b ){
-                return( a < b );
+                return( a.len() > b.len() );
               }
             );
             files.foreach(
