@@ -508,7 +508,7 @@ using namespace fs;
         const auto forcedRef = e_forceref( file );
         fs << "    "
            << forcedRef
-           << " /* [ForcedRef] "
+           << " /* [e_forceref] "
            << file.filename().c_str()
            << " */"
            << " = {isa = PBXFileReference; "
@@ -2280,7 +2280,7 @@ using namespace fs;
                       << f.filename()
                       << ".framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                       << e_forceref( f )// Force don't just trap Hapgood.
-                      << " /* "
+                      << " /* [e_forceref] "
                       << f.filename();
                   out << " */; };\n";
                 }else if( f.ext().empty() ){// <-- ie, the eon framework.
@@ -2834,8 +2834,8 @@ using namespace fs;
                      __.emplace( f.hash() );
                   else return;
                   fs << "        " // Library reference per child.
-                     << f.toFileID()
-                     << " /* [FileID] "
+                     << e_forceref( f )
+                     << " /* [e_forceref] "
                      << f.filename();
                   fs << " */,\n";
                 }
@@ -2912,7 +2912,7 @@ using namespace fs;
                     // File reference added per child.
                     fs << "        "
                        << e_forceref( file )
-                       << " /* " + file.filename()
+                       << " /* [e_forceref] " + file.filename()
                        << " */,\n";
                   }
                 );
@@ -2950,8 +2950,8 @@ using namespace fs;
             files.foreach(
               [&]( const File& f ){
                 fs << "        "
-                   << f.toFileID()
-                   << " /* [FileID] "
+                   << e_forceref( f )
+                   << " /* [e_forceref] "
                    << f.filename();
                 fs << " */,\n";
               }
@@ -3042,8 +3042,8 @@ using namespace fs;
             files.foreach(
               [&]( const File& f ){
                 fs << "        "
-                   << f.toFileID()
-                   << " /* [FileID] "
+                   << e_forceref( f )
+                   << " /* [e_forceref] "
                    << f.filename() + " */,\n";
               }
             );
