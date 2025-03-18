@@ -892,7 +892,7 @@ using namespace fs;
                       if( target.tolower().hash() != "macos"_64 )
                         break;
                       fs << "        ";
-                      fs << f.toBuildID()
+                      fs << f.toBuildID2()
                          << " /* "
                          << f.filename()
                          << " in Embed Frameworks */,\n";
@@ -919,7 +919,7 @@ using namespace fs;
                     if( target.tolower().hash() != "macos"_64 )
                       return;
                     fs << "        ";
-                    fs << f.toBuildID();
+                    fs << f.toBuildID2();
                     fs << " /* " + f.filename();
                     fs << " in CopyFiles */,\n";
                   }
@@ -980,10 +980,14 @@ using namespace fs;
                  << "      buildActionMask = 2147483647;\n"
                  << "      files = (\n";
               Files files;
-              inSources( Type::kCpp ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-              inSources( Type::kMm  ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-              inSources( Type::kM   ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-              inSources( Type::kC   ).foreach( [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kCpp ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kMm ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kM ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kC ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
               files.foreach(
                 [&]( const File& f ){
                   if( f.empty() )
@@ -1608,7 +1612,7 @@ using namespace fs;
                 );
                 out << "    "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << file
                     << " in Frameworks"
                     << " */ = "
@@ -1685,7 +1689,7 @@ using namespace fs;
                   break;
                 out << "    "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << file
                     << " in Sources"
                     << " */ = "
@@ -1729,7 +1733,7 @@ using namespace fs;
                     return false;
                   }
                 );
-                string embedRef( e_saferef( f ));
+                const auto& embedRef( e_saferef( f ));
                 toEmbedFiles().foreachs(
                   [&]( const auto& _f ){
                     if( !_f.isEmbed() )
@@ -1740,7 +1744,7 @@ using namespace fs;
                 );
                 out << "    "
                     << embedRef
-                    << " /* "
+                    << " /* [e_saferef] "
                     << file
                     << " in Embed Frameworks"
                     << " */ = "
@@ -2249,15 +2253,15 @@ using namespace fs;
 
           e_msgf( "Generating %s" , ccp( toLabel().tolower() ));
           File::filerefs.clear();
-          std::set<u64> hits;
 
           //--------------------------------------------------------------------
-          // Link with system frameworks when desired. This only handles a
+          // LINK WITH system frameworks when desired. This only handles a
           // system framework, including TBD( text based dylibs ).
           //--------------------------------------------------------------------
 
           if( !toLinkWith().empty() ){
             const auto& with = toLinkWith().splitAtCommas();
+            std::set<u64> hits;
             with.foreach(
               [&]( const auto& w ){
                 if( hits.find(    w.hash() )==hits.end() )
@@ -2273,7 +2277,7 @@ using namespace fs;
                   (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
                   out << "    "
                       << f.toBuildID()
-                      << " /* "
+                      << " /* [LinkWith] "
                       << f.filename()
                       << ".framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                       << e_forceref( f )// Force don't just trap Hapgood.
@@ -2293,7 +2297,7 @@ using namespace fs;
                             -> inSources( Type::kPlatform ).push( f );
                           out << "    "
                               << f.toBuildID()
-                              << " /* "
+                              << " /* [BuildID] "
                               << f.filename()
                               << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                               << e_saferef( f ) // traps bugs for ya, Hapgood!
@@ -2362,10 +2366,11 @@ using namespace fs;
           }
 
           //--------------------------------------------------------------------
-          // Now copy all marked library references.
+          // Now copy all EMBEDDED LIB references.
           //--------------------------------------------------------------------
 
-          { const_cast<Xcode*>( this )->
+          { std::set<u64> hits;
+            const_cast<Xcode*>( this )->
             toEmbedFiles().foreach(
               [&]( File& f ){
                 if( hits.find(    f.hash() )==hits.end() )
@@ -2392,11 +2397,11 @@ using namespace fs;
                   default:/* Everything else */{
                     out << "    "
                         << f.toBuildID()
-                        << " /* "
+                        << " /* [BuildID (EmbedFiles)] "
                         << f.filename()
                         << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                        << f.toCopyID()
-                        << " /* "
+                        << e_saferef( f )
+                        << " /* [e_saferef] "
                         << f.filename();
                     out << " */; };\n";
                     break;
@@ -2405,19 +2410,19 @@ using namespace fs;
                 if( f.isEmbed() )
                   out << "    "
                       << f.toBuildID2()
-                      << " /* "
+                      << " /* [BuildID2 (EmbedFiles)] "
                       << f.filename()
                       << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = "
                       << f.toEmbedRef()
-                      << " /* "
+                      << " /* [EmbedRef] "
                       << f.filename();
              else out << "    "
                       << f.toBuildID2()
-                      << " /* "
+                      << " /* [buildID2] "
                       << f.filename()
                       << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
                       << f.toEmbedRef()
-                      << " /* "
+                      << " /* [EmbedRef] "
                       << f.filename();
                 out << " */;";
                 auto stripper = false;
