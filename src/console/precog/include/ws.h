@@ -56,8 +56,6 @@
               }
 
               friend string e_saferef( const File& f ){
-                if( f.isEmbed() )
-                  return f.toEmbedRef();
                 const auto& x=filerefs[ f.m_uFileRef ];
                 if( x.empty() )
                   e_break( "Failure to lookup file!" );

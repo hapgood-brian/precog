@@ -508,7 +508,7 @@ using namespace fs;
         const auto forcedRef = e_forceref( file );
         fs << "    "
            << forcedRef
-           << " /* "
+           << " /* [ForcedRef] "
            << file.filename().c_str()
            << " */"
            << " = {isa = PBXFileReference; "
@@ -2300,7 +2300,7 @@ using namespace fs;
                               << f.filename()
                               << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                               << e_saferef( f ) // traps bugs for ya, Hapgood!
-                              << " /* "
+                              << " /* [e_saferef] "
                               << f.filename();
                           out << " */; };\n";
                           break;
@@ -2310,11 +2310,11 @@ using namespace fs;
                             -> inSources( Type::kPlatform ).push( f );
                           out << "    "
                               << f.toBuildID()
-                              << " /* "
+                              << " /* [BuildID]"
                               << f.filename()
                               << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                               << e_saferef( f ) // traps bugs for ya, Hapgood!
-                              << " /* "
+                              << " /* [e_saferef] "
                               << f.filename();
                           out << " */; };\n";
                           break;
@@ -2353,11 +2353,11 @@ using namespace fs;
                 (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; };\n";
               }
@@ -2464,11 +2464,11 @@ using namespace fs;
               [&]( auto& f ){
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; };\n";
               }
@@ -2493,11 +2493,11 @@ using namespace fs;
                   return;
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in Resource */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; };\n";
               }
@@ -2517,11 +2517,11 @@ using namespace fs;
               [&]( auto& f ){
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; };\n";
               }
@@ -2539,11 +2539,11 @@ using namespace fs;
               [&]( auto& f ){
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; settings = {ATTRIBUTES = (Private, ); }; };\n";
               }
@@ -2561,11 +2561,11 @@ using namespace fs;
               [&]( auto& f ){
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; settings = {ATTRIBUTES = (Public, ); }; };\n";
               }
@@ -2589,11 +2589,11 @@ using namespace fs;
                   return;
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* BuildID] "
                     << f.filename()
                     << " in Sources */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; };\n";
               }
@@ -2615,11 +2615,11 @@ using namespace fs;
                   return;
                 out << "    "
                     << f.toBuildID()
-                    << " /* "
+                    << " /* [BuildID] "
                     << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
                     << e_saferef( f )
-                    << " /* "
+                    << " /* [e_saferef] "
                     << f.filename();
                 out << " */; };\n";
               }
