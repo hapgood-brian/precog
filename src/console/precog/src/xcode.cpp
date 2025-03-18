@@ -1863,7 +1863,7 @@ using namespace fs;
                     << embedRef
                     << " /* "
                     << file
-                    << " in Embed Frameworks (" e_2str(__LINE__) ")"
+                    << " in Embed Frameworks"
                     << " */ = "
                     << "{isa = PBXFileReference;"
                     << " lastKnownFileType = wrapper.framework; "
