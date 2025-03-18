@@ -485,144 +485,6 @@ using namespace fs;
       }
 
     //}:                                          |
-    //writeFileReferencePlugin*:{                 |
-
-      void Workspace::Xcode::writeFileReferencePlugin( Writer& fs
-          , const string& type
-          , const string& name
-          , const string& explicitT // expliciteFileType, etc.
-          , const string& tree
-          , const File&   file )const{
-        // Note _path must end with /
-        auto sourceTree( tree );
-        string key;
-        key.catf( "%s:%s_plugin" // Must differ actually!
-          , ccp( file )
-          , ccp( file.toWhere() ));
-        #if 0 // Keeping this for reference.
-          static std::set<u64>___;
-          if( ___.find(    key.hash() ) != ___.end() )
-              ___.emplace( key.hash() );
-          else return;
-        #endif
-        const auto forcedRef = file.toBuildID();
-        fs << "    "
-           << forcedRef
-           << " /* "
-           << file.filename().c_str()
-           << " */"
-           << " = {isa = PBXFileReference; "
-           << explicitT
-           << " = "
-           << type;
-        fs << "; ";
-        File f( file );
-        fs << "name = " << file.filename() << "; ";
-        const auto& osextra = f.os().ext().tolower();
-        if( tree.hash() != "BUILT_PRODUCTS_DIR"_64 ){
-          if( osextra.hash() != ".entitlements"_64 ){
-            fs << "path = "
-               << ( f.toWhere().empty()
-                ? ( "../" + f )
-                : ( "../" + f.toWhere() + f ))
-               << "; ";
-          }else{
-            fs << "path = " << f.os() << "; ";
-          }
-        }else{
-          if( f.toWhere().empty() ){
-            if( osextra != ".bundle"_64 )
-              e_break( "Only bundles may be plugins on macOS." );
-            string out;
-            const auto paths = toFindLibsPaths().splitAtCommas();
-            auto it = paths.getIterator();
-            while( it ){
-              if( e_fexists( *it + "/" + f )){
-                sourceTree = "SOURCE_ROOT";
-                f.setWhere( "../"
-                  + *it
-                  + "/"
-                  + f );
-                break;
-              }
-              ++it;
-            }
-          }
-          fs << "path = "
-             << ( !f.toWhere().empty() ? f.toWhere().os() : f );
-          fs << "; ";
-        }
-        fs << "sourceTree = "
-           << sourceTree;
-        fs << "; };\n";
-      }
-
-      void Workspace::Xcode::writeFileReferencePlugins( Writer& fs
-          , Files& paths
-          , const string& type
-          , const string& word // LastKnownFileType, etc.
-          , const string& tree )const{
-        if( paths.empty() )
-          return;
-        ignore( paths, toIgnoreParts() );
-        paths.sort(
-          []( const auto& a, const auto& b ){
-            return(
-                a.filename().tolower()
-              < b.filename().tolower()
-            );
-          }
-        );
-        const auto& targets = getTargets();
-        paths.foreach(
-          [&]( File& f ){
-            auto it = targets.getIterator();
-            while( it ){
-              const auto& name = f.os();
-              const auto& target = *it;
-              switch( target.hash() ){
-                case "macos"_64:
-                  writeFileReferencePlugin( fs
-                    , type
-                    , name
-                    , word
-                    , tree
-                    , f );
-                  break;
-                case "ios"_64:/**/{
-                  const auto& ext=( !f.toWhere().empty(/* no os call */)
-                    ? f.toWhere().os().ext().tolower()
-                    : f.os().ext().tolower() );
-                  switch( ext.hash() ){
-                    case".framework"_64:
-                      [[fallthrough]];
-                    case".bundle"_64:
-                      [[fallthrough]];
-                    case".dylib"_64:
-                      // No support on iOS for frameworks, bundles, dylibs,
-                      // or text-based-dylibs.
-                      break;
-                    case".a"_64:
-                      [[fallthrough]];
-                    default:
-                      writeFileReferencePlugin( fs
-                        , type
-                        , name
-                        , word
-                        , tree
-                        , f );
-                      break;
-                  }
-                  break;
-                }
-              }
-              ++it;
-            }
-          }
-        );
-      }
-
-    //}:                                          |
     //writeFileReferenceGroup*:{                  |
 
       void Workspace::Xcode::writeFileReferenceGroup( Writer& fs
@@ -633,14 +495,16 @@ using namespace fs;
           , const File&   file )const{
         // Note _path ends with /
         auto sourceTree( tree );
-        static hashmap<u64,s8>_;
+        // Not added more than 1.
+        static std::set<u64>___;
         string key;
         key.catf( "%s:%s"
           , ccp( file )
           , ccp( file.toWhere() ));
-        if( !_.find( key.hash() ))
-             _. set( key.hash(), 1 );
+        if(___.find(    key.hash() )==___.end() )
+           ___.emplace( key.hash() );
         else return;
+        // Produce a forced reference: always succeeds!
         const auto forcedRef = e_forceref( file );
         fs << "    "
            << forcedRef
@@ -666,7 +530,7 @@ using namespace fs;
             fs << "path = " << f.os() << "; ";
           }
         }else{
-          if(  f.toWhere().empty() ){
+           if( f.toWhere().empty() ){
             switch( osextra.hash() ){
               case".framework"_64:
                 [[fallthrough]];
@@ -1028,10 +892,10 @@ using namespace fs;
                       if( target.tolower().hash() != "macos"_64 )
                         break;
                       fs << "        ";
-                      fs << f.toBuildID();
-                      fs << " /* "
-                        + f.filename()
-                        + " in Embed Frameworks */,\n";
+                      fs << f.toBuildID()
+                         << " /* "
+                         << f.filename()
+                         << " in Embed Frameworks */,\n";
                       break;
                     }
                   }
@@ -1645,7 +1509,7 @@ using namespace fs;
         // We need to take everything in m_aSources[ Type::kPlatform ] and make
         // the PBXFileReference section statement like the next. That should
         // fix everything to do with linking against system frameworks etc.
-        // Anything in said m_aSources[ i ].
+        // Anything in said m_aSources[ i ]. SYSTEM FRAMEWORKS HERE!
         //----------------------------------------------------------------------
 
         Files files;
@@ -1664,11 +1528,21 @@ using namespace fs;
             files.push( fi );
           }
         );
+
+        //----------------------------------------------------------------------
+        // Platform sources go HERE.
+        //----------------------------------------------------------------------
+
         inSources( Type::kPlatform ).foreach(
           [&]( const auto& fi ){
             files.push( fi );
           }
         );
+
+        //----------------------------------------------------------------------
+        // Finally we can check file flags and write a FILE REF.
+        //----------------------------------------------------------------------
+
         files.foreach(
           [&]( const auto& f ){
             const auto& ext = f.ext().tolower();
@@ -1713,6 +1587,11 @@ using namespace fs;
                 out << " };\n";
                 break;
               }
+
+              //----------------------------------------------------------------
+              // Handle static libs.
+              //----------------------------------------------------------------
+
               case".a"_64:/* static library */{
                 const auto& paths = toFindLibsPaths().splitAtCommas();
                 string certainPath( f );
@@ -2370,7 +2249,7 @@ using namespace fs;
 
           e_msgf( "Generating %s" , ccp( toLabel().tolower() ));
           File::filerefs.clear();
-          hashmap<u64,s8> hits;
+          std::set<u64> hits;
 
           //--------------------------------------------------------------------
           // Link with system frameworks when desired. This only handles a
@@ -2381,8 +2260,8 @@ using namespace fs;
             const auto& with = toLinkWith().splitAtCommas();
             with.foreach(
               [&]( const auto& w ){
-                if( !hits.find( w.hash() ))
-                  hits.set( w.hash(), 1 );
+                if( hits.find(    w.hash() )==hits.end() )
+                    hits.emplace( w.hash() );
                 else return;
                 File f( w );
 
@@ -2489,8 +2368,8 @@ using namespace fs;
           { const_cast<Xcode*>( this )->
             toEmbedFiles().foreach(
               [&]( File& f ){
-                if( !hits.find( f.hash() ))
-                  hits.set( f.hash(), 1 );
+                if( hits.find(    f.hash() )==hits.end() )
+                    hits.emplace( f.hash() );
                 else return;
                 if( f.ext().empty() )
                   return;
