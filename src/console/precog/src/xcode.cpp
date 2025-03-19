@@ -2828,342 +2828,342 @@ using namespace fs;
       //}:                                        |
       //writePBXGroupSection:{                    |
 
-      void Workspace::Xcode::writePBXGroupSection( Writer& fs )const{
-        fs << "\n    /* Begin PBXGroup section */\n";
+        void Workspace::Xcode::writePBXGroupSection( Writer& fs )const{
+          fs << "\n    /* Begin PBXGroup section */\n";
 
-          //--------------------------------------------------------------------
-          // Top level group.
-          //--------------------------------------------------------------------
+            //------------------------------------------------------------------
+            // Top level group.
+            //------------------------------------------------------------------
 
-          fs << "    " + m_sMainGroup + " = {\n"
-             << "      isa = PBXGroup;\n"
-             << "      children = (\n";
-          if( hasEntitlements() ){
-            fs << "        "
-               << m_sEntFileRefID
-               << " /* "
-               << toLabel();
-            fs << ".entitlements */,\n";
-          }
-          fs << "        " + m_sFrameworkGroup + " /* Frameworks */,\n"
-             << "        " + m_sProductsGroup  + " /* Products */,\n";
-          if( !toEmbedFiles().empty() )
-            fs << "        " + m_sPluginsGroup   + " /* Plugins */,\n";
-          fs << "        " + m_sCodeGroup      + " /* Code */,\n"
-             << "      );\n"
-             << "      sourceTree = \"<group>\";\n"
-             << "    };\n";
+            fs << "    " + m_sMainGroup + " = {\n"
+               << "      isa = PBXGroup;\n"
+               << "      children = (\n";
+            if( hasEntitlements() ){
+              fs << "        "
+                 << m_sEntFileRefID
+                 << " /* "
+                 << toLabel();
+              fs << ".entitlements */,\n";
+            }
+            fs << "        " + m_sFrameworkGroup + " /* Frameworks */,\n"
+               << "        " + m_sProductsGroup  + " /* Products */,\n";
+            if( !toEmbedFiles().empty() )
+              fs << "        " + m_sPluginsGroup   + " /* Plugins */,\n";
+            fs << "        " + m_sCodeGroup      + " /* Code */,\n"
+               << "      );\n"
+               << "      sourceTree = \"<group>\";\n"
+               << "    };\n";
 
-          //--------------------------------------------------------------------
-          // Add PBX groups.
-          //--------------------------------------------------------------------
+            //------------------------------------------------------------------
+            // Add PBX groups.
+            //------------------------------------------------------------------
 
-          Files files;
-          addToPBXGroupSection( fs,
-            [&]( const string& product
-               , const string& target
-               , const string& label ){
+            Files files;
+            addToPBXGroupSection( fs,
+              [&]( const string& product
+                 , const string& target
+                 , const string& label ){
 
-              //----------------------------------------------------------------
-              // Frameworks group.
-              //----------------------------------------------------------------
+                //--------------------------------------------------------------
+                // Frameworks group.
+                //--------------------------------------------------------------
 
-              // Write out the Group SID first.
-              fs << "    "
-                 << m_sFrameworkGroup
-                 << " /* Frameworks */ = {\n"
-                 << "      isa = PBXGroup;\n"
-                 << "      children = (\n";
-              // Collect everything we want to embed.
-              Files collection;
-              inSources( Type::kPlatform ).foreach(
-                [&]( const auto& f ){
-                  collection.push( f );
-                }
-              );
-              collection.sort(
-                []( const auto& a, const auto& b ){
-                  return( a.len() > b.len() );
-                }
-              );
-              std::set<u64>___;
-              collection.foreach(
-                [&]( const auto& f ){
-                  if( ___.find(    f.hash() )==___.end() )
-                      ___.emplace( f.hash() );
-                  else return;
-                  fs << "        " << f.toFileID();
-                  if( Workspace::bmp->bVerbose )
-                       fs << " /* [FileID] ";
-                  else fs << " /* ";
-                  fs << f.filename();
-                  fs << " */,\n";
-                }
-              );
-              fs << string( "      );\n" )
-                 << "      name = Frameworks;\n"
-                 << "      sourceTree = \"<group>\";\n";
-              fs << "    };\n";
-
-              //----------------------------------------------------------------
-              // Plugins group.
-              //----------------------------------------------------------------
-
-              // Write out the Group SID first.
-              if( !toEmbedFiles().empty() ){
+                // Write out the Group SID first.
                 fs << "    "
-                   << m_sPluginsGroup
-                   << " /* Plugins */ = {\n"
+                   << m_sFrameworkGroup
+                   << " /* Frameworks */ = {\n"
                    << "      isa = PBXGroup;\n"
                    << "      children = (\n";
                 // Collect everything we want to embed.
-                Files plugins;
-                plugins.pushVector( toEmbedFiles() );
-                plugins.sort(
+                Files collection;
+                inSources( Type::kPlatform ).foreach(
+                  [&]( const auto& f ){
+                    collection.push( f );
+                  }
+                );
+                collection.sort(
                   []( const auto& a, const auto& b ){
                     return( a.len() > b.len() );
                   }
                 );
-                std::set<u64>__;
-                plugins.foreach(
+                std::set<u64>___;
+                collection.foreach(
                   [&]( const auto& f ){
-                    if(__.find(    f.hash() )==__.end() )
-                       __.emplace( f.hash() );
+                    if( ___.find(    f.hash() )==___.end() )
+                        ___.emplace( f.hash() );
                     else return;
-                    fs << "        " << e_forceref( f );
+                    fs << "        " << f.toFileID();
                     if( Workspace::bmp->bVerbose )
-                         fs << " /* [forceref] ";
+                         fs << " /* [FileID] ";
                     else fs << " /* ";
                     fs << f.filename();
                     fs << " */,\n";
                   }
                 );
                 fs << string( "      );\n" )
-                   << "      name = Plugins;\n"
+                   << "      name = Frameworks;\n"
                    << "      sourceTree = \"<group>\";\n";
                 fs << "    };\n";
-              }
 
-              //----------------------------------------------------------------
-              // Products group.
-              //----------------------------------------------------------------
+                //--------------------------------------------------------------
+                // Plugins group.
+                //--------------------------------------------------------------
 
-              auto build( toBuild() );
-              switch( build.hash( ) ){
-                case"shared"_64:
-                  build = ".dylib";
-                  break;
-                case"static"_64:
-                  build = ".a";
-                  break;
-                default:
-                  build = "." + build;
-                  break;
-              }
-
-              //----------------------------------------------------------------
-              // Save out the Products group.
-              //----------------------------------------------------------------
-
-              fs << "    "
-                 << m_sProductsGroup
-                 << " /* Products */ = {\n"
-                 << "      isa = PBXGroup;\n"
-                 << "      children = (\n"
-                 << "        "
-                 << product
-                 << " /* "
-                 << label
-                 << build
-                 << " */,\n"
-                 << "      );\n"
-                 << "      name = Products;\n"
-                 << "      sourceTree = \"<group>\";\n"
-                 << "    };\n";
-
-              //----------------------------------------------------------------
-              // Compute header inclusions.
-              //----------------------------------------------------------------
-
-              const auto n_headers = 0u
-                 + inSources( Type::kHpp ).size()
-                 + inSources( Type::kInl ).size()
-                 + inSources( Type::kH   ).size();
-              if( n_headers ){
+                // Write out the Group SID first.
+                if( !toEmbedFiles().empty() ){
                   fs << "    "
-                     << m_sIncludeGroup
-                     << " /* include */ = {\n"
+                     << m_sPluginsGroup
+                     << " /* Plugins */ = {\n"
                      << "      isa = PBXGroup;\n"
                      << "      children = (\n";
-                inSources( Type::kHpp ).foreach(
-                  [&]( const auto& fi ){ files.push( fi ); });
-                inSources( Type::kInl ).foreach(
-                  [&]( const auto& fi ){ files.push( fi ); });
-                inSources( Type::kH ).foreach(
-                  [&]( const auto& fi ){ files.push( fi ); });
-                files.sort(
-                  []( const auto& a, const auto& b ){
-                    return( a < b );
-                  }
-                );
-                files.foreach(
-                  [&]( const File& file ){
-                    // File reference added per child.
-                    fs << "        " << e_forceref( file );
-                    if( Workspace::bmp->bVerbose )
-                         fs << " /* [forceref] ";
-                    else fs << " /* ";
-                    fs <<  file.filename();
-                    fs << " */,\n";
-                  }
-                );
-                fs << "      );\n";
-                fs << "      name = include;\n";
-                fs << "      sourceTree = \"<group>\";\n";
-                fs << "    };\n";
-              }
-            }
-          );
+                  // Collect everything we want to embed.
+                  Files plugins;
+                  plugins.pushVector( toEmbedFiles() );
+                  plugins.sort(
+                    []( const auto& a, const auto& b ){
+                      return( a.len() > b.len() );
+                    }
+                  );
+                  std::set<u64>__;
+                  plugins.foreach(
+                    [&]( const auto& f ){
+                      if(__.find(    f.hash() )==__.end() )
+                         __.emplace( f.hash() );
+                      else return;
+                      fs << "        " << e_forceref( f );
+                      if( Workspace::bmp->bVerbose )
+                           fs << " /* [forceref] ";
+                      else fs << " /* ";
+                      fs << f.filename();
+                      fs << " */,\n";
+                    }
+                  );
+                  fs << string( "      );\n" )
+                     << "      name = Plugins;\n"
+                     << "      sourceTree = \"<group>\";\n";
+                  fs << "    };\n";
+                }
 
-          //--------------------------------------------------------------------
-          // Resources group.
-          //--------------------------------------------------------------------
+                //--------------------------------------------------------------
+                // Products group.
+                //--------------------------------------------------------------
 
-          const auto n_resources = 0u
-             + inSources( Type::kStoryboard ).size()
-             + inSources( Type::kXcasset    ).size()
-             + inSources( Type::kPrefab     ).size()
-             + inSources( Type::kLproj      ).size();
-          if( n_resources ){
-            fs << "    " + m_sResourcesGroup + " /* resources */ = {\n"
-               << "      isa = PBXGroup;\n"
-               << "      children = (\n";
-            files.clear();
-            inSources( Type::kStoryboard ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kXcasset    ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kPrefab     ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kLproj      ).foreach( [&]( const auto& fi ){ files.push( fi ); });
-            files.sort(
-              []( const auto& a, const auto& b ){
-                return( a < b );
+                auto build( toBuild() );
+                switch( build.hash( ) ){
+                  case"shared"_64:
+                    build = ".dylib";
+                    break;
+                  case"static"_64:
+                    build = ".a";
+                    break;
+                  default:
+                    build = "." + build;
+                    break;
+                }
+
+                //--------------------------------------------------------------
+                // Save out the Products group.
+                //--------------------------------------------------------------
+
+                fs << "    "
+                   << m_sProductsGroup
+                   << " /* Products */ = {\n"
+                   << "      isa = PBXGroup;\n"
+                   << "      children = (\n"
+                   << "        "
+                   << product
+                   << " /* "
+                   << label
+                   << build
+                   << " */,\n"
+                   << "      );\n"
+                   << "      name = Products;\n"
+                   << "      sourceTree = \"<group>\";\n"
+                   << "    };\n";
+
+                //--------------------------------------------------------------
+                // Compute header inclusions.
+                //--------------------------------------------------------------
+
+                const auto n_headers = 0u
+                   + inSources( Type::kHpp ).size()
+                   + inSources( Type::kInl ).size()
+                   + inSources( Type::kH   ).size();
+                if( n_headers ){
+                    fs << "    "
+                       << m_sIncludeGroup
+                       << " /* include */ = {\n"
+                       << "      isa = PBXGroup;\n"
+                       << "      children = (\n";
+                  inSources( Type::kHpp ).foreach(
+                    [&]( const auto& fi ){ files.push( fi ); });
+                  inSources( Type::kInl ).foreach(
+                    [&]( const auto& fi ){ files.push( fi ); });
+                  inSources( Type::kH ).foreach(
+                    [&]( const auto& fi ){ files.push( fi ); });
+                  files.sort(
+                    []( const auto& a, const auto& b ){
+                      return( a < b );
+                    }
+                  );
+                  files.foreach(
+                    [&]( const File& file ){
+                      // File reference added per child.
+                      fs << "        " << e_forceref( file );
+                      if( Workspace::bmp->bVerbose )
+                           fs << " /* [forceref] ";
+                      else fs << " /* ";
+                      fs <<  file.filename();
+                      fs << " */,\n";
+                    }
+                  );
+                  fs << "      );\n";
+                  fs << "      name = include;\n";
+                  fs << "      sourceTree = \"<group>\";\n";
+                  fs << "    };\n";
+                }
               }
             );
-            files.foreach(
-              [&]( const File& f ){
-                fs << "        " << e_forceref( f );
-                if( Workspace::bmp->bVerbose )
-                     fs << " /* [forceref] ";
-                else fs << " /* ";
-                fs << f.filename();
-                fs << " */,\n";
-              }
-            );
-            fs << "      );\n";
-            fs << "      name = Resources;\n";
-            fs << "      sourceTree = \"<group>\";\n";
-            fs << "    };\n";
-          }
 
-          //--------------------------------------------------------------------
-          // Code group.
-          //--------------------------------------------------------------------
+            //------------------------------------------------------------------
+            // Resources group.
+            //------------------------------------------------------------------
 
-          const auto hasReferences=( !toPublicHeaders().empty()||!toPublicRefs().empty() );
-          fs << "    " + m_sCodeGroup + " /* Code */ = {\n"
-             << "      isa = PBXGroup;\n"
-             << "      children = (\n"
-             << "        " + m_sReferencesGroup + " /* references */,\n"
-             << "        " + m_sResourcesGroup + " /* resources */,\n"
-             << "        " + m_sIncludeGroup + " /* include */,\n"
-             << "        " + m_sSrcGroup + " /* src */,\n"
-             << "      );\n"//don't with prev or next line.
-             << "      name = Code;\n"
-             << "      sourceTree = \"<group>\";\n";
-          fs << "    };\n";
-
-          //--------------------------------------------------------------------
-          // Exporting public headers/references from framework.
-          //--------------------------------------------------------------------
-
-          if( hasReferences ){
-            const auto n_refs = 0u
-                + toPublicHeaders().size()
-                + toPublicRefs().size();
-            if( n_refs ){
-              fs << "    " + m_sReferencesGroup + " /* references */ = {\n"
+            const auto n_resources = 0u
+               + inSources( Type::kStoryboard ).size()
+               + inSources( Type::kXcasset    ).size()
+               + inSources( Type::kPrefab     ).size()
+               + inSources( Type::kLproj      ).size();
+            if( n_resources ){
+              fs << "    " + m_sResourcesGroup + " /* resources */ = {\n"
                  << "      isa = PBXGroup;\n"
                  << "      children = (\n";
               files.clear();
-              toPublicHeaders().foreach( [&]( const auto& fi ){ files.push( fi ); });
-              toPublicRefs   ().foreach( [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kStoryboard ).foreach( [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kXcasset    ).foreach( [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kPrefab     ).foreach( [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kLproj      ).foreach( [&]( const auto& fi ){ files.push( fi ); });
               files.sort(
                 []( const auto& a, const auto& b ){
                   return( a < b );
                 }
               );
               files.foreach(
-                [&]( const auto& f ){
-                  fs << "        " << f.toFileID();
+                [&]( const File& f ){
+                  fs << "        " << e_forceref( f );
                   if( Workspace::bmp->bVerbose )
-                       fs << " /* [FileID] ";
+                       fs << " /* [forceref] ";
                   else fs << " /* ";
-                  fs << ccp( f );
+                  fs << f.filename();
                   fs << " */,\n";
                 }
               );
               fs << "      );\n";
-              fs << "      name = references;\n";
+              fs << "      name = Resources;\n";
+              fs << "      sourceTree = \"<group>\";\n";
+              fs << "    };\n";
+            }
+
+            //------------------------------------------------------------------
+            // Code group.
+            //------------------------------------------------------------------
+
+            const auto hasReferences=( !toPublicHeaders().empty()||!toPublicRefs().empty() );
+            fs << "    " + m_sCodeGroup + " /* Code */ = {\n"
+               << "      isa = PBXGroup;\n"
+               << "      children = (\n"
+               << "        " + m_sReferencesGroup + " /* references */,\n"
+               << "        " + m_sResourcesGroup + " /* resources */,\n"
+               << "        " + m_sIncludeGroup + " /* include */,\n"
+               << "        " + m_sSrcGroup + " /* src */,\n"
+               << "      );\n"//don't with prev or next line.
+               << "      name = Code;\n"
+               << "      sourceTree = \"<group>\";\n";
+            fs << "    };\n";
+
+            //------------------------------------------------------------------
+            // Exporting public headers/references from framework.
+            //------------------------------------------------------------------
+
+            if( hasReferences ){
+              const auto n_refs = 0u
+                  + toPublicHeaders().size()
+                  + toPublicRefs().size();
+              if( n_refs ){
+                fs << "    " + m_sReferencesGroup + " /* references */ = {\n"
+                   << "      isa = PBXGroup;\n"
+                   << "      children = (\n";
+                files.clear();
+                toPublicHeaders().foreach( [&]( const auto& fi ){ files.push( fi ); });
+                toPublicRefs   ().foreach( [&]( const auto& fi ){ files.push( fi ); });
+                files.sort(
+                  []( const auto& a, const auto& b ){
+                    return( a < b );
+                  }
+                );
+                files.foreach(
+                  [&]( const auto& f ){
+                    fs << "        " << f.toFileID();
+                    if( Workspace::bmp->bVerbose )
+                         fs << " /* [FileID] ";
+                    else fs << " /* ";
+                    fs << ccp( f );
+                    fs << " */,\n";
+                  }
+                );
+                fs << "      );\n";
+                fs << "      name = references;\n";
+                fs << "      path = \"\";\n";
+                fs << "      sourceTree = \"<group>\";\n";
+                fs << "    };\n";
+              }
+            }
+
+            //------------------------------------------------------------------
+            // Source group.
+            //------------------------------------------------------------------
+
+            const auto n_sources = 0u
+                + inSources( Type::kCpp ).size()
+                + inSources( Type::kMm  ).size()
+                + inSources( Type::kC   ).size()
+                + inSources( Type::kM   ).size();
+            if( n_sources ){
+              fs << "    " + m_sSrcGroup + " /* src */ = {\n"
+                  + "      isa = PBXGroup;\n"
+                  + "      children = (\n";
+              files.clear();
+              inSources( Type::kCpp ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kMm ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kC ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              inSources( Type::kM ).foreach(
+                [&]( const auto& fi ){ files.push( fi ); });
+              files.sort(
+                []( const auto& a, const auto& b ){
+                  return( a.len() > b.len() );
+                }
+              );
+              files.foreach(
+                [&]( const File& f ){
+                  fs << "        " << e_forceref( f );
+                  if( Workspace::bmp->bVerbose )
+                       fs << " /* [forceref] ";
+                  else fs << " /* ";
+                  fs << f.filename() + " */,\n";
+                }
+              );
+              fs << "      );\n";
+              fs << "      name = src;\n";
               fs << "      path = \"\";\n";
               fs << "      sourceTree = \"<group>\";\n";
               fs << "    };\n";
             }
-          }
 
-          //--------------------------------------------------------------------
-          // Source group.
-          //--------------------------------------------------------------------
-
-          const auto n_sources = 0u
-              + inSources( Type::kCpp ).size()
-              + inSources( Type::kMm  ).size()
-              + inSources( Type::kC   ).size()
-              + inSources( Type::kM   ).size();
-          if( n_sources ){
-            fs << "    " + m_sSrcGroup + " /* src */ = {\n"
-                + "      isa = PBXGroup;\n"
-                + "      children = (\n";
-            files.clear();
-            inSources( Type::kCpp ).foreach(
-              [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kMm ).foreach(
-              [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kC ).foreach(
-              [&]( const auto& fi ){ files.push( fi ); });
-            inSources( Type::kM ).foreach(
-              [&]( const auto& fi ){ files.push( fi ); });
-            files.sort(
-              []( const auto& a, const auto& b ){
-                return( a.len() > b.len() );
-              }
-            );
-            files.foreach(
-              [&]( const File& f ){
-                fs << "        " << e_forceref( f );
-                if( Workspace::bmp->bVerbose )
-                     fs << " /* [forceref] ";
-                else fs << " /* ";
-                fs << f.filename() + " */,\n";
-              }
-            );
-            fs << "      );\n";
-            fs << "      name = src;\n";
-            fs << "      path = \"\";\n";
-            fs << "      sourceTree = \"<group>\";\n";
-            fs << "    };\n";
-          }
-
-        fs << "    /* End PBXGroup section */\n";
-      }
+          fs << "    /* End PBXGroup section */\n";
+        }
 
       //}:                                        |
     //}:                                          |
