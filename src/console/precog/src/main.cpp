@@ -593,9 +593,9 @@ using namespace fs;
         //----------------------------------------------------------------------
 
         // Each has 256 steps: 0x00 thru 0xFF.
-        static constexpr u8 major = 0x03; // Major version number [majrelease]
-        static constexpr u8 minor = 0x00; // Minor version number [minrelease]
-        static constexpr u8 rev   = 0x0D; // Revision
+        static constexpr u8 major = 0x03; // Major version number [majRelease].
+        static constexpr u8 minor = 0x00; // Minor version number [minRelease].
+        static constexpr u8 rev   = 0x0E; // Revision.
         static constexpr u8 build = 0x00; // Build (Reg bvilds).
         static constexpr u8 patch = 0x00; // Patch (bug fixes).
 
@@ -726,7 +726,8 @@ using namespace fs;
                 // Verbose comments (good for PBX format).
                 //--------------------------------------------------------------
 
-                if( it->tolower().hash() == "--verbose-pbx"_64 ){
+                if(( it->tolower().hash() == "--verbose-pbx"_64 )||
+                   ( it->tolower().hash() == "--pbx"_64 )){
                   Workspace::bmp->bVerbose = 1;
                   break;
                 }
@@ -850,7 +851,7 @@ using namespace fs;
                 //--------------------------------------------------------------
 
                 //--------------------------------------------------------------
-                // Export an Xcode 1x project instead of the default 12.
+                // Export an Xcode "--xc??" project.
                 //--------------------------------------------------------------
 
                 if( it->hash() == "--xc16"_64 ){
@@ -910,6 +911,7 @@ using namespace fs;
                   e_msg( "        --xcode-v15" );
                   e_msg( "        --xcode-v12" );
                   e_msg( "        --xcode-v11" );
+                  e_msg( "        -v or --verbose-pbx/--pbx # Add to PBX comments." );
                   e_msg( "      when \"vs2022[=v143]\"" );
                   e_msg( "        --maxplugin=ext" );
                   e_msg( "      when \"ninja\"" );
