@@ -4368,32 +4368,6 @@ using namespace fs;
         //}:                                      |
 
         void Workspace::Xcode::writeXCBuildConfigurationSection( Writer& fs )const{
-
-          //--------------------------------------------------------------------
-          // Local lambda to write out the LDFLAGS section.
-          //--------------------------------------------------------------------
-
-          const auto& addOtherCppFlags = [&]( const string& config ){};
-          const auto& addOtherLDFlags  = [&](
-                const string& config
-              , const string& target ){
-            auto libs = toLibraryPaths();
-            libs.replace( "$(CONFIGURATION)", config );
-            libs.splitAtCommas().foreach(
-              [&]( const string& f ){
-                auto dir = f;
-                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
-                  dir = "../" + f;
-                }
-                fs << "          -L" + dir + ",\n";
-              }
-            );
-          };
-
-          //--------------------------------------------------------------------
-          // Begin build configuration section.
-          //--------------------------------------------------------------------
-
           fs << "\n    /* Begin XCBuildConfiguration section */\n";
           addToXCBuildConfigurationSection( fs,
             [&]( const string& target
