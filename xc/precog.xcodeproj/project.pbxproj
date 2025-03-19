@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		801908CFC5ABCD2E21C6AAEB /* liblua.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 80DD107A21F891CEC4ADCDB3 /* liblua.a */; };
+		81C19F092D8A74AC0067E0B0 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81C19F082D8A74AC0067E0B0 /* CoreFoundation.framework */; };
+		81C19F0B2D8A74B40067E0B0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81C19F0A2D8A74B40067E0B0 /* Foundation.framework */; };
 		8630CCCC4DA6A515CEC5CBDA /* liblz4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 885EEB83FBC7CD0178A5CA9A /* liblz4.a */; };
 		863EBF2B860E2AC8D04511EB /* luacore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86E5F49F3CB201D9F7EC9A41 /* luacore.cpp */; };
 		864B94A047EC7C4C549C9BD5 /* generator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 81610A8BD328E9BDDC576D29 /* generator.cpp */; };
@@ -22,14 +24,14 @@
 		8CF0C62246D669CB3563EDFC /* libpal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 876CDBCD19ABE1FDEB7C842D /* libpal.a */; };
 		8D7AD3A501FEE9591F4F7CC8 /* libstartup.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8AA2DC63727566A4FB90FABB /* libstartup.a */; };
 		8DC0532E4D14B4D447CF41AD /* std.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8F329BF15D390E4FE7ED257B /* std.cpp */; };
-		8FEFEE4D152BB6CBE4EAE861 /* pbx.mm in Sources */ = {isa = PBXBuildFile; fileRef = 82F92CEA9817CDE340EDBDBB /* pbx.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		80AAF4DFAAEBAAC572F42A1B /* ws.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ws.h; path = ../src/console/precog/include/ws.h; sourceTree = "<group>"; };
 		80DD107A21F891CEC4ADCDB3 /* liblua.a */ = {isa = PBXFileReference; lastKnownFileType = archive.a; path = liblua.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		81610A8BD328E9BDDC576D29 /* generator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = generator.cpp; path = ../src/console/precog/src/generator.cpp; sourceTree = "<group>"; };
-		82F92CEA9817CDE340EDBDBB /* pbx.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objc; name = pbx.mm; path = ../src/console/precog/src/macOS/pbx.mm; sourceTree = "<group>"; };
+		81C19F082D8A74AC0067E0B0 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		81C19F0A2D8A74B40067E0B0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		8396C820AB2B9CCB2769A427 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		865FDCAF34D1F610CEB93F2B /* ninja.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ninja.cpp; path = ../src/console/precog/src/ninja.cpp; sourceTree = "<group>"; };
 		86E5F49F3CB201D9F7EC9A41 /* luacore.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = luacore.cpp; path = ../src/console/precog/src/luacore.cpp; sourceTree = "<group>"; };
@@ -58,8 +60,10 @@
 			files = (
 				8D7AD3A501FEE9591F4F7CC8 /* libstartup.a in Frameworks */,
 				8AABE1C8C8FC0BE87B1747EF /* libgfc.a in Frameworks */,
+				81C19F092D8A74AC0067E0B0 /* CoreFoundation.framework in Frameworks */,
 				801908CFC5ABCD2E21C6AAEB /* liblua.a in Frameworks */,
 				8CF0C62246D669CB3563EDFC /* libpal.a in Frameworks */,
+				81C19F0B2D8A74B40067E0B0 /* Foundation.framework in Frameworks */,
 				8630CCCC4DA6A515CEC5CBDA /* liblz4.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -70,7 +74,9 @@
 		84CFC9BD391C748D76F3BF71 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				81C19F0A2D8A74B40067E0B0 /* Foundation.framework */,
 				8396C820AB2B9CCB2769A427 /* CoreFoundation.framework */,
+				81C19F082D8A74AC0067E0B0 /* CoreFoundation.framework */,
 				8AA58C05CF9B1AF8BFBBA71B /* Foundation.framework */,
 				8FDCDAAC27AD9D111FCB661E /* libgfc.a */,
 				80DD107A21F891CEC4ADCDB3 /* liblua.a */,
@@ -90,7 +96,6 @@
 				8D63392AC012BF6DA22BAC06 /* msvc.cpp */,
 				8AF33008E0B1019AD15D90F3 /* ndk.cpp */,
 				865FDCAF34D1F610CEB93F2B /* ninja.cpp */,
-				82F92CEA9817CDE340EDBDBB /* pbx.mm */,
 				8F329BF15D390E4FE7ED257B /* std.cpp */,
 				8744B9E86017917029CD0B8C /* stdafx.cpp */,
 				8F80E64F0CDB9D26017ECF30 /* ws.cpp */,
@@ -224,7 +229,6 @@
 				8CEEACEBF14AF4A38AE56A7D /* stdafx.cpp in Sources */,
 				8A6B3CFAD05F225C01E39DF9 /* ws.cpp in Sources */,
 				8824B7B6CE08AF6DD3C511BC /* xcode.cpp in Sources */,
-				8FEFEE4D152BB6CBE4EAE861 /* pbx.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

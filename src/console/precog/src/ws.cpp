@@ -20,11 +20,6 @@ using namespace gfc;
 using namespace fs;
 
 //================================================+=============================
-//Externs:{                                       |
-
-  void verifyPBX( const string& path );
-
-//}:                                              |
 //Statics:{                                       |
 
   hashmap<u64,Workspace::Element>* Workspace::map = nullptr;
