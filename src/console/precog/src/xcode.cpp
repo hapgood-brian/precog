@@ -505,10 +505,10 @@ using namespace fs;
            ___.emplace( key.hash() );
         else return;
         // Produce a forced reference: always succeeds!
-        const auto forcedRef = e_forceref( file );
+        const auto forcedRef = file.toFileID();
         fs << "    " << forcedRef;
         if( Workspace::bmp->bVerbose )
-             fs << " /* [forceref] ";
+             fs << " /* [FileID] ";
         else fs << " /* ";
         fs << file.filename().c_str()
            << " */"
@@ -2931,9 +2931,9 @@ using namespace fs;
                       if(__.find(    f.hash() )==__.end() )
                          __.emplace( f.hash() );
                       else return;
-                      fs << "        " << e_forceref( f );
+                      fs << "        " << f.toFileID();
                       if( Workspace::bmp->bVerbose )
-                           fs << " /* [forceref] ";
+                           fs << " /* [FileID] ";
                       else fs << " /* ";
                       fs << f.filename();
                       fs << " */,\n";
@@ -3010,9 +3010,9 @@ using namespace fs;
                   files.foreach(
                     [&]( const File& file ){
                       // File reference added per child.
-                      fs << "        " << e_forceref( file );
+                      fs << "        " << file.toFileID();
                       if( Workspace::bmp->bVerbose )
-                           fs << " /* [forceref] ";
+                           fs << " /* [FileID] ";
                       else fs << " /* ";
                       fs <<  file.filename();
                       fs << " */,\n";
@@ -3051,9 +3051,9 @@ using namespace fs;
               );
               files.foreach(
                 [&]( const File& f ){
-                  fs << "        " << e_forceref( f );
+                  fs << "        " << f.toFileID();
                   if( Workspace::bmp->bVerbose )
-                       fs << " /* [forceref] ";
+                       fs << " /* [FileID] ";
                   else fs << " /* ";
                   fs << f.filename();
                   fs << " */,\n";
@@ -3149,9 +3149,9 @@ using namespace fs;
               );
               files.foreach(
                 [&]( const File& f ){
-                  fs << "        " << e_forceref( f );
+                  fs << "        " << f.toFileID();
                   if( Workspace::bmp->bVerbose )
-                       fs << " /* [forceref] ";
+                       fs << " /* [FileID] ";
                   else fs << " /* ";
                   fs << f.filename() + " */,\n";
                 }
