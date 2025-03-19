@@ -520,6 +520,8 @@
             void writePBXResourcesBuildPhaseSection(   fs::Writer& )const;
             void writePBXHeadersBuildPhaseSection(     fs::Writer& )const;
             void writePBXSourcesBuildPhaseSection(     fs::Writer& )const;
+            void writeXCBuildConfigurationSectionDbg(  fs::Writer&, const string&, const string&, const string& )const;
+            void writeXCBuildConfigurationSectionRel(  fs::Writer&, const string&, const string&, const string& )const;
             void writeXCBuildConfigurationSection(     fs::Writer& )const;
             void writeXCConfigurationListSection(      fs::Writer& )const;
             void writePBXFileReferenceSection(         fs::Writer& )const;

@@ -3227,7 +3227,1145 @@ using namespace fs;
         }
 
       //}:                                        |
-      //writeXCBuileConfigurationSection:{        |
+      //writeXCBuileConfigurationSection*:{       |
+        //[dbg]:{                                 |
+
+          void Workspace::Xcode::writeXCBuildConfigurationSectionDbg( Writer& fs
+              , const string& target
+              , const string& dbgNative
+              , const string& dbgConfig )const{
+
+            //------------------------------------------------------------------
+            // Local lambda to write out the LDFLAGS section.
+            //------------------------------------------------------------------
+
+            const auto& addOtherCppFlags = [&]( const string& config ){};
+            const auto& addOtherLDFlags  = [&](
+                  const string& config
+                , const string& target ){
+              auto libs = toLibraryPaths();
+              libs.replace( "$(CONFIGURATION)", config );
+              libs.splitAtCommas().foreach(
+                [&]( const string& f ){
+                  auto dir = f;
+                  if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                    dir = "../" + f;
+                  }
+                  fs << "          -L" + dir + ",\n";
+                }
+              );
+            };
+
+            //------------------------------------------------------------------
+            // Begin build configuration section.
+            //------------------------------------------------------------------
+
+            fs << "    " + dbgConfig + " /* Debug */ = {\n"
+                + "      isa = XCBuildConfiguration;\n"
+                + "      buildSettings = {\n";
+            string enableARC;
+            if( toFlags()->bEnableARC ){
+              enableARC = "YES";
+            }else{
+              enableARC = "NO";
+            }
+            if( toFlags()->bUniversalBinary ){
+              //Note: no ARCHS = ? gives us a universal binary.
+            }else if(( target == "ios" )||toFlags()->bAppleSilicon ){
+              fs << "        VALID_ARCHS = arm64;\n";
+              fs << "        ARCHS = arm64;\n";
+            }else{
+              fs << "        VALID_ARCHS = x86_64;\n";
+              fs << "        ARCHS = x86_64;\n";
+            }
+            fs << "        ALWAYS_SEARCH_USER_PATHS = NO;\n"
+               << "        CLANG_ANALYZER_NONNULL = YES;\n"
+               << "        CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;\n"
+               << "        CLANG_CXX_LANGUAGE_STANDARD = \"" + toLanguage() + "\";\n"
+               << "        CLANG_CXX_LIBRARY = \"libc++\";\n"
+               << "        CLANG_ENABLE_MODULES = YES;\n"
+               << "        CLANG_ENABLE_OBJC_ARC = " + enableARC + ";\n"
+               << "        CLANG_ENABLE_OBJC_WEAK = YES;\n";
+            if( !bmp->bXcode11 ){
+              fs << "        CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;\n";
+            }
+            fs << "        CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;\n"
+               << "        CLANG_WARN_BOOL_CONVERSION = YES;\n"
+               << "        CLANG_WARN_COMMA = YES;\n"
+               << "        CLANG_WARN_CONSTANT_CONVERSION = YES;\n"
+               << "        CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;\n"
+               << "        CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;\n"
+               << "        CLANG_WARN_DOCUMENTATION_COMMENTS = YES;\n"
+               << "        CLANG_WARN_EMPTY_BODY = YES;\n"
+               << "        CLANG_WARN_ENUM_CONVERSION = YES;\n"
+               << "        CLANG_WARN_INFINITE_RECURSION = YES;\n"
+               << "        CLANG_WARN_INT_CONVERSION = YES;\n"
+               << "        CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;\n"
+               << "        CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;\n"
+               << "        CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;\n"
+               << "        CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;\n"
+               << "        CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;\n"
+               << "        CLANG_WARN_STRICT_PROTOTYPES = YES;\n"
+               << "        CLANG_WARN_SUSPICIOUS_MOVE = YES;\n"
+               << "        CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;\n"
+               << "        CLANG_WARN_UNREACHABLE_CODE = YES;\n"
+               << "        CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;\n"
+               << "        COPY_PHASE_STRIP = NO;\n"
+               << "        CURRENT_PROJECT_VERSION = 1;\n"
+               << "        DEBUG_INFORMATION_FORMAT = \"dwarf-with-dsym\";\n"
+               << "        ENABLE_NS_ASSERTIONS = NO;\n"
+               << "        ENABLE_STRICT_OBJC_MSGSEND = YES;\n"
+               << "        GCC_C_LANGUAGE_STANDARD = " + toLanguageC() + ";\n"
+               << "        GCC_NO_COMMON_BLOCKS = YES;\n"
+               << "        GCC_OPTIMIZATION_LEVEL = fast;\n"
+               << "        GCC_PREPROCESSOR_DEFINITIONS = (\n";
+            fs << "          \"$(inherited)\",\n";
+            string dbgDefines = toDefinesDbg();
+            const auto& vrel = dbgDefines.splitAtCommas();
+            vrel.foreach(
+              [&]( const string& define ){
+                if( define.empty() ){
+                  return;
+                }
+                if( *define == '#' ){
+                  return;
+                }
+                fs << "          \"" + define + "\",\n";
+              }
+            );
+            fs << string( "        );\n" )
+                + "        GCC_WARN_64_TO_32_BIT_CONVERSION = YES;\n"
+                + "        GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;\n"
+                + "        GCC_WARN_UNDECLARED_SELECTOR = YES;\n"
+                + "        GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;\n"
+                + "        GCC_WARN_UNUSED_FUNCTION = YES;\n"
+                + "        GCC_WARN_UNUSED_VARIABLE = YES;\n";
+            if( !toPrefixHeader().empty() ){
+              fs << "        GCC_PRECOMPILE_PREFIX_HEADER = YES;\n";
+              fs << "        GCC_PREFIX_HEADER = \"../" + toPrefixHeader() + "\";\n";
+            }
+            if( target == "ios"_64 ){
+              fs << string( "        IPHONEOS_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" );
+            }else{
+              fs << string( "        MACOSX_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" );
+            }
+            fs << "        MTL_ENABLE_DEBUG_INFO = NO;\n"
+               << "        MTL_FAST_MATH = YES;\n";
+            if( target == "ios"_64 ){
+              fs << "        SDKROOT = iphoneos;\n";
+            }else{
+              fs << "        SDKROOT = macosx;\n";
+            }
+            fs << "        VERSIONING_SYSTEM = \"apple-generic\";\n"
+               << "        VERSION_INFO_PREFIX = \"\";\n"
+               << "      };\n"
+               << "      name = Release;\n"
+               << "    };\n";
+            fs << "    " + dbgNative + " /* Debug */ = {\n"
+                + "      isa = XCBuildConfiguration;\n"
+                + "      buildSettings = {\n";
+            if( toFlags()->bUniversalBinary ){
+              //Note: no ARCHS = ? gives us a universal binary.
+            }else if(( target == "ios" )||toFlags()->bAppleSilicon ){
+              fs << "        VALID_ARCHS = arm64;\n";
+              fs << "        ARCHS = arm64;\n";
+            }else{
+              fs << "        VALID_ARCHS = x86_64;\n";
+              fs << "        ARCHS = x86_64;\n";
+            }
+            if( hasEntitlements() ){
+              fs << "        CODE_SIGN_ENTITLEMENTS = ./"
+                 << toLabel()
+                 << ".entitlements;\n"
+              ;
+            }
+            fs << "        CODE_SIGN_STYLE = Automatic;\n";
+            if( !toTeamName().empty() ){
+              fs << "        DEVELOPMENT_TEAM = " + toTeamName() + ";\n";
+            }
+            fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+            fs << "          \"$(inherited)\",\n";
+            fs << "          \"@executable_path/../Frameworks\",\n";
+            fs << "        );\n";
+            fs << "        LIBRARY_SEARCH_PATHS = (\n";
+            auto libraryPaths = toFindLibsPaths().splitAtCommas();
+            libraryPaths.foreach(
+              [&]( const string& f ){
+                auto dir = f;
+                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                  dir = "../" + f;
+                }
+                dir.replace( "$(CONFIGURATION)", "Debug" );
+                // Fix corner case where 'dir' is destroyed.
+                ccp end = strstr( dir, ".framework" );
+                if( end ){
+                  dir = string( dir, end );
+                }
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            fs << "        FRAMEWORK_SEARCH_PATHS = (\n";
+            auto frameworkSearchPaths
+              = toFrameworkPaths()
+              . splitAtCommas();
+            frameworkSearchPaths.foreach(
+              [&]( const auto& _dir ){
+                File dir( _dir );
+                dir.replace( "$(CONFIGURATION)", "Debug" );
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            auto paths = writeXCBuildConfigSystemHeaderSearch( fs );
+            switch( toBuild().hash() ){
+              //------------------------------------+-----------------------------
+              //application:{                       |
+
+                case"application"_64:
+                  fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
+                  fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs <<  string( toFlags()->bHardenedRuntime
+                    ? "YES"
+                    : "NO" );
+                  fs << + ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Debug" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Debug", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //framework:{                         |
+
+                case"framework"_64:
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
+                  fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../Frameworks\",\n";
+                  fs << "          \"@loader_path/Frameworks\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Debug" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Debug", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //console:{                           |
+
+                case"console"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs << string( toFlags()->bHardenedRuntime
+                    ? "YES"
+                    : "NO" );
+                  fs << ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Debug" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Debug", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //bundle:{                            |
+
+                case"bundle"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../"
+                       << inSources( Type::kPlist )[ 0 ].toWhere()
+                       << inSources( Type::kPlist )[ 0 ]
+                       << "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../PlugIns\",\n";
+                  fs << "          \"@loader_path/PlugIns\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Debug" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Debug", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //shared:{                            |
+
+                case"shared"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../PlugIns\",\n";
+                  fs << "          \"@loader_path/PlugIns\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Debug" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Debug", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //static:{                            |
+
+                case"static"_64:
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        EXECUTABLE_PREFIX = lib;\n";
+                  break;
+
+              //}:                                  |
+              //------------------------------------+-----------------------------
+            }
+            fs << "        SKIP_INSTALL = YES;\n";
+            if( toBuild() == "bundle"_64 ){
+              fs << "        WRAPPER_EXTENSION = bundle;\n";
+            }
+            fs << "      };\n";
+            fs << "      name = Debug;\n";
+            fs << "    };\n";
+
+            //--------------------------------------------------------------------
+            // Handle all the build types: Release.
+            //--------------------------------------------------------------------
+
+            fs << "    " + dbgNative + " /* Release */ = {\n"
+               << "      isa = XCBuildConfiguration;\n"
+               << "      buildSettings = {\n";
+            if( hasEntitlements() ){
+              fs << "        CODE_SIGN_ENTITLEMENTS = "
+                 << toLabel()
+                 << ".entitlements;\n"
+              ;
+            }
+            fs << "        CODE_SIGN_STYLE = Automatic;\n";
+            if( !toTeamName().empty() ){
+              fs << "        DEVELOPMENT_TEAM = " + toTeamName() + ";\n";
+            }
+            fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+            fs << "          \"$(inherited)\",\n";
+            fs << "          \"@executable_path/../Frameworks\",\n";
+            fs << "        );\n";
+            fs << "        LIBRARY_SEARCH_PATHS = (\n";
+            libraryPaths.foreach(
+              [&]( const string& f ){
+                auto dir = f;
+                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                  dir = "../" + f;
+                }
+                // Fix corner case where 'dir' is destroyed.
+                ccp end = strstr( dir, ".framework" );
+                if( end ){
+                  dir = string( dir, end );
+                }
+                dir.replace( "$(CONFIGURATION)", "Release" );
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            fs << "        FRAMEWORK_SEARCH_PATHS = (\n";
+            frameworkSearchPaths.foreach(
+              [&]( const string& f ){
+                auto dir = f;
+                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                  dir = "../" + f;
+                }
+                dir.replace( "$(CONFIGURATION)", "Release" );
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            paths = writeXCBuildConfigSystemHeaderSearch( fs );
+            switch( toBuild().hash() ){
+              //------------------------------------+-----------------------------
+              //application:{                       |
+
+                case"application"_64:
+                  fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs << string( toFlags()->bHardenedRuntime ? "YES" : "NO" );
+                  fs << ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //framework:{                         |
+
+                case"framework"_64:
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../Frameworks\",\n";
+                  fs << "          \"@loader_path/Frameworks\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //console:{                           |
+
+                case"console"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs << string( toFlags()->bHardenedRuntime ? "YES" : "NO" ) + ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //bundle:{                            |
+
+                case"bundle"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../PlugIns\",\n";
+                  fs << "          \"@loader_path/PlugIns\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Debug" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Debug", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //shared:{                            |
+
+                case"shared"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../Frameworks\",\n";
+                  fs << "          \"@loader_path/Frameworks\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //static:{                            |
+
+                case"static"_64:
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        EXECUTABLE_PREFIX = lib;\n";
+                  break;
+
+              //}:                                  |
+              //------------------------------------+-----------------------------
+            }
+            fs << "        SKIP_INSTALL = YES;\n";
+            if( toBuild() == "bundle"_64 ){
+              fs << "        WRAPPER_EXTENSION = bundle;\n";
+            }
+            fs << "      };\n";
+            fs << "      name = Release;\n";
+            fs << "    };\n";
+          }
+
+        //}:                                      |
+        //[rel]:{                                 |
+
+          void Workspace::Xcode::writeXCBuildConfigurationSectionRel( Writer& fs
+              , const string& target
+              , const string& relNative
+              , const string& relConfig )const{
+
+            //------------------------------------------------------------------
+            // Local lambda to write out the LDFLAGS section.
+            //------------------------------------------------------------------
+
+            const auto& addOtherCppFlags = [&]( const string& config ){};
+            const auto& addOtherLDFlags  = [&](
+                  const string& config
+                , const string& target ){
+              auto libs = toLibraryPaths();
+              libs.replace( "$(CONFIGURATION)", config );
+              libs.splitAtCommas().foreach(
+                [&]( const string& f ){
+                  auto dir = f;
+                  if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                    dir = "../" + f;
+                  }
+                  fs << "          -L" + dir + ",\n";
+                }
+              );
+            };
+
+            //------------------------------------------------------------------
+            // Begin build configuration section.
+            //------------------------------------------------------------------
+
+            fs << "    " + relConfig + " /* Release */ = {\n"
+                + "      isa = XCBuildConfiguration;\n"
+                + "      buildSettings = {\n";
+            string enableARC;
+            if( toFlags()->bEnableARC ){
+              enableARC = "YES";
+            }else{
+              enableARC = "NO";
+            }
+            if( toFlags()->bUniversalBinary ){
+              //Note: no ARCHS = ? gives us a universal binary.
+            }else if(( target == "ios" )||toFlags()->bAppleSilicon ){
+              fs << "        VALID_ARCHS = arm64;\n";
+              fs << "        ARCHS = arm64;\n";
+            }else{
+              fs << "        VALID_ARCHS = x86_64;\n";
+              fs << "        ARCHS = x86_64;\n";
+            }
+            fs << "        ALWAYS_SEARCH_USER_PATHS = NO;\n"
+               << "        CLANG_ANALYZER_NONNULL = YES;\n"
+               << "        CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;\n"
+               << "        CLANG_CXX_LANGUAGE_STANDARD = \"" + toLanguage() + "\";\n"
+               << "        CLANG_CXX_LIBRARY = \"libc++\";\n"
+               << "        CLANG_ENABLE_MODULES = YES;\n"
+               << "        CLANG_ENABLE_OBJC_ARC = " + enableARC + ";\n"
+               << "        CLANG_ENABLE_OBJC_WEAK = YES;\n";
+            if( !bmp->bXcode11 ){
+              fs << "        CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;\n";
+            }
+            fs << "        CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;\n"
+               << "        CLANG_WARN_BOOL_CONVERSION = YES;\n"
+               << "        CLANG_WARN_COMMA = YES;\n"
+               << "        CLANG_WARN_CONSTANT_CONVERSION = YES;\n"
+               << "        CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;\n"
+               << "        CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;\n"
+               << "        CLANG_WARN_DOCUMENTATION_COMMENTS = YES;\n"
+               << "        CLANG_WARN_EMPTY_BODY = YES;\n"
+               << "        CLANG_WARN_ENUM_CONVERSION = YES;\n"
+               << "        CLANG_WARN_INFINITE_RECURSION = YES;\n"
+               << "        CLANG_WARN_INT_CONVERSION = YES;\n"
+               << "        CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;\n"
+               << "        CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;\n"
+               << "        CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;\n"
+               << "        CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;\n"
+               << "        CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;\n"
+               << "        CLANG_WARN_STRICT_PROTOTYPES = YES;\n"
+               << "        CLANG_WARN_SUSPICIOUS_MOVE = YES;\n"
+               << "        CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;\n"
+               << "        CLANG_WARN_UNREACHABLE_CODE = YES;\n"
+               << "        CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;\n"
+               << "        COPY_PHASE_STRIP = NO;\n"
+               << "        CURRENT_PROJECT_VERSION = 1;\n"
+               << "        DEBUG_INFORMATION_FORMAT = \"dwarf-with-dsym\";\n"
+               << "        ENABLE_NS_ASSERTIONS = NO;\n"
+               << "        ENABLE_STRICT_OBJC_MSGSEND = YES;\n"
+               << "        GCC_C_LANGUAGE_STANDARD = " + toLanguageC() + ";\n"
+               << "        GCC_NO_COMMON_BLOCKS = YES;\n"
+               << "        GCC_OPTIMIZATION_LEVEL = fast;\n"
+               << "        GCC_PREPROCESSOR_DEFINITIONS = (\n";
+            fs << "          \"$(inherited)\",\n";
+            string relDefines = toDefinesRel();
+            const auto& vrel = relDefines.splitAtCommas();
+            vrel.foreach(
+              [&]( const string& define ){
+                if( define.empty() ){
+                  return;
+                }
+                if( *define == '#' ){
+                  return;
+                }
+                fs << "          \"" + define + "\",\n";
+              }
+            );
+            fs << string( "        );\n" )
+                + "        GCC_WARN_64_TO_32_BIT_CONVERSION = YES;\n"
+                + "        GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;\n"
+                + "        GCC_WARN_UNDECLARED_SELECTOR = YES;\n"
+                + "        GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;\n"
+                + "        GCC_WARN_UNUSED_FUNCTION = YES;\n"
+                + "        GCC_WARN_UNUSED_VARIABLE = YES;\n";
+            if( !toPrefixHeader().empty() ){
+              fs << "        GCC_PRECOMPILE_PREFIX_HEADER = YES;\n";
+              fs << "        GCC_PREFIX_HEADER = \"../" + toPrefixHeader() + "\";\n";
+            }
+            if( target == "ios"_64 ){
+              fs << string( "        IPHONEOS_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" );
+            }else{
+              fs << string( "        MACOSX_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" );
+            }
+            fs << "        MTL_ENABLE_DEBUG_INFO = NO;\n"
+               << "        MTL_FAST_MATH = YES;\n";
+            if( target == "ios"_64 ){
+              fs << "        SDKROOT = iphoneos;\n";
+            }else{
+              fs << "        SDKROOT = macosx;\n";
+            }
+            fs << "        VERSIONING_SYSTEM = \"apple-generic\";\n"
+               << "        VERSION_INFO_PREFIX = \"\";\n"
+               << "      };\n"
+               << "      name = Release;\n"
+               << "    };\n";
+            fs << "    " + relNative + " /* Release */ = {\n"
+                + "      isa = XCBuildConfiguration;\n"
+                + "      buildSettings = {\n";
+            if( toFlags()->bUniversalBinary ){
+              //Note: no ARCHS = ? gives us a universal binary.
+            }else if(( target == "ios" )||toFlags()->bAppleSilicon ){
+              fs << "        VALID_ARCHS = arm64;\n";
+              fs << "        ARCHS = arm64;\n";
+            }else{
+              fs << "        VALID_ARCHS = x86_64;\n";
+              fs << "        ARCHS = x86_64;\n";
+            }
+            if( hasEntitlements() ){
+              fs << "        CODE_SIGN_ENTITLEMENTS = ./"
+                 << toLabel()
+                 << ".entitlements;\n"
+              ;
+            }
+            fs << "        CODE_SIGN_STYLE = Automatic;\n";
+            if( !toTeamName().empty() ){
+              fs << "        DEVELOPMENT_TEAM = " + toTeamName() + ";\n";
+            }
+            fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+            fs << "          \"$(inherited)\",\n";
+            fs << "          \"@executable_path/../Frameworks\",\n";
+            fs << "        );\n";
+            fs << "        LIBRARY_SEARCH_PATHS = (\n";
+            auto libraryPaths = toFindLibsPaths().splitAtCommas();
+            libraryPaths.foreach(
+              [&]( const string& f ){
+                auto dir = f;
+                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                  dir = "../" + f;
+                }
+                dir.replace( "$(CONFIGURATION)", "Release" );
+                // Fix corner case where 'dir' is destroyed.
+                ccp end = strstr( dir, ".framework" );
+                if( end ){
+                  dir = string( dir, end );
+                }
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            fs << "        FRAMEWORK_SEARCH_PATHS = (\n";
+            auto frameworkSearchPaths
+              = toFrameworkPaths()
+              . splitAtCommas();
+            frameworkSearchPaths.foreach(
+              [&]( const auto& _dir ){
+                File dir( _dir );
+                dir.replace( "$(CONFIGURATION)", "Release" );
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            auto paths = writeXCBuildConfigSystemHeaderSearch( fs );
+            switch( toBuild().hash() ){
+              //------------------------------------+-----------------------------
+              //application:{                       |
+
+                case"application"_64:
+                  fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
+                  fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs <<  string( toFlags()->bHardenedRuntime
+                    ? "YES"
+                    : "NO" );
+                  fs << + ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //framework:{                         |
+
+                case"framework"_64:
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
+                  fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../Frameworks\",\n";
+                  fs << "          \"@loader_path/Frameworks\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //console:{                           |
+
+                case"console"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs << string( toFlags()->bHardenedRuntime
+                    ? "YES"
+                    : "NO" );
+                  fs << ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //bundle:{                            |
+
+                case"bundle"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../"
+                       << inSources( Type::kPlist )[ 0 ].toWhere()
+                       << inSources( Type::kPlist )[ 0 ]
+                       << "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../PlugIns\",\n";
+                  fs << "          \"@loader_path/PlugIns\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //shared:{                            |
+
+                case"shared"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../PlugIns\",\n";
+                  fs << "          \"@loader_path/PlugIns\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //static:{                            |
+
+                case"static"_64:
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        EXECUTABLE_PREFIX = lib;\n";
+                  break;
+
+              //}:                                  |
+              //------------------------------------+-----------------------------
+            }
+            fs << "        SKIP_INSTALL = YES;\n";
+            if( toBuild() == "bundle"_64 ){
+              fs << "        WRAPPER_EXTENSION = bundle;\n";
+            }
+            fs << "      };\n";
+            fs << "      name = Release;\n";
+            fs << "    };\n";
+
+            //--------------------------------------------------------------------
+            // Handle all the build types: Release.
+            //--------------------------------------------------------------------
+
+            fs << "    " + relNative + " /* Release */ = {\n"
+               << "      isa = XCBuildConfiguration;\n"
+               << "      buildSettings = {\n";
+            if( hasEntitlements() ){
+              fs << "        CODE_SIGN_ENTITLEMENTS = "
+                 << toLabel()
+                 << ".entitlements;\n"
+              ;
+            }
+            fs << "        CODE_SIGN_STYLE = Automatic;\n";
+            if( !toTeamName().empty() ){
+              fs << "        DEVELOPMENT_TEAM = " + toTeamName() + ";\n";
+            }
+            fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+            fs << "          \"$(inherited)\",\n";
+            fs << "          \"@executable_path/../Frameworks\",\n";
+            fs << "        );\n";
+            fs << "        LIBRARY_SEARCH_PATHS = (\n";
+            libraryPaths.foreach(
+              [&]( const string& f ){
+                auto dir = f;
+                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                  dir = "../" + f;
+                }
+                // Fix corner case where 'dir' is destroyed.
+                ccp end = strstr( dir, ".framework" );
+                if( end ){
+                  dir = string( dir, end );
+                }
+                dir.replace( "$(CONFIGURATION)", "Release" );
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            fs << "        FRAMEWORK_SEARCH_PATHS = (\n";
+            frameworkSearchPaths.foreach(
+              [&]( const string& f ){
+                auto dir = f;
+                if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
+                  dir = "../" + f;
+                }
+                dir.replace( "$(CONFIGURATION)", "Release" );
+                fs << "          " + dir + ",\n";
+              }
+            );
+            fs << "        );\n";
+            paths = writeXCBuildConfigSystemHeaderSearch( fs );
+            switch( toBuild().hash() ){
+              //------------------------------------+-----------------------------
+              //application:{                       |
+
+                case"application"_64:
+                  fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs << string( toFlags()->bHardenedRuntime ? "YES" : "NO" );
+                  fs << ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //framework:{                         |
+
+                case"framework"_64:
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../Frameworks\",\n";
+                  fs << "          \"@loader_path/Frameworks\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //console:{                           |
+
+                case"console"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        ENABLE_HARDENED_RUNTIME = ";
+                  fs << string( toFlags()->bHardenedRuntime ? "YES" : "NO" ) + ";\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  break;
+
+              //}:                                  |
+              //bundle:{                            |
+
+                case"bundle"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../PlugIns\",\n";
+                  fs << "          \"@loader_path/PlugIns\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //shared:{                            |
+
+                case"shared"_64:
+                  if( target == "ios"_64 )
+                    e_break( "Cannot set the target to \"console\" for iOS." );
+                  fs << "        DEFINES_MODULE = YES;\n";
+                  fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
+                  fs << "        DYLIB_CURRENT_VERSION = 1;\n";
+                  fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
+                  if( !inSources( Type::kPlist ).empty() )
+                    fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
+                  fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
+                  fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
+                  fs << "          \"$(inherited)\",\n";
+                  fs << "          \"@executable_path/../Frameworks\",\n";
+                  fs << "          \"@loader_path/Frameworks\",\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
+                  addOtherCppFlags( "Release" );
+                  fs << "        );\n";
+                  fs << "        OTHER_CFLAGS = (\n";
+                  fs << "        );\n";
+                  fs << "        OTHER_LDFLAGS = (\n";
+                  if( toFlags()->bLoadAllSymbols )
+                    fs << "          -all_load,\n";
+                  addOtherLDFlags( "Release", target );
+                  fs << "        );\n";
+                  fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
+                  break;
+
+              //}:                                  |
+              //static:{                            |
+
+                case"static"_64:
+                  fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
+                  fs << "        EXECUTABLE_PREFIX = lib;\n";
+                  break;
+
+              //}:                                  |
+              //------------------------------------+-----------------------------
+            }
+            fs << "        SKIP_INSTALL = YES;\n";
+            if( toBuild() == "bundle"_64 ){
+              fs << "        WRAPPER_EXTENSION = bundle;\n";
+            }
+            fs << "      };\n";
+            fs << "      name = Release;\n";
+            fs << "    };\n";
+          }
+
+        //}:                                      |
 
         void Workspace::Xcode::writeXCBuildConfigurationSection( Writer& fs )const{
 
@@ -3247,12 +4385,6 @@ using namespace fs;
                 if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
                   dir = "../" + f;
                 }
-                // Some verbose logging to debug the directory 'dir'.
-                if( e_getCvar( bool, "VERBOSE_LOGGING" )){
-                  e_msgf( "      dir: \"%s\""
-                    , ccp( dir )
-                  );
-                }
                 fs << "          -L" + dir + ",\n";
               }
             );
@@ -3269,657 +4401,8 @@ using namespace fs;
                , const string& dbgNative
                , const string& relConfig
                , const string& dbgConfig ){
-
-              //----------------------------------------------------------------
-              // DEBUG build configuration.
-              //----------------------------------------------------------------
-
-              fs << "    " + dbgNative + " /* Debug */ = {\n"
-                  + "      isa = XCBuildConfiguration;\n"
-                  + "      buildSettings = {\n";
-              string lang;
-              switch( wsp->toLanguage() ){
-                case"c++23"_64:
-                  lang = "c++2b";
-                  break;
-                case"c++20"_64:// TODO: Which is right? In msvc.cpp we use 20!
-                  lang = "c++20";
-                  break;
-                case"c++17"_64:
-                  lang = "c++17";
-                  break;
-                case"c++14"_64:
-                  lang = "c++14";
-                  break;
-                case"c++11"_64:
-                  lang = "c++11";
-                  break;
-              }
-              fs << string( "        ALWAYS_SEARCH_USER_PATHS = NO;\n" )
-                  + "        CLANG_ANALYZER_NONNULL = YES;\n"
-                  + "        CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;\n"
-                  + "        CLANG_CXX_LANGUAGE_STANDARD = \"" + lang + "\";\n"
-                  + "        CLANG_CXX_LIBRARY = \"libc++\";\n"
-                  + "        CLANG_ENABLE_MODULES = YES;\n";
-              string enableARC;
-              if( toFlags()->bEnableARC ){
-                enableARC = "YES";
-              }else{
-                enableARC = "NO";
-              }
-              fs << "        CLANG_ENABLE_OBJC_ARC = " + enableARC + ";\n";
-              fs << "        CLANG_ENABLE_OBJC_WEAK = YES;\n";
-              if( !bmp->bXcode11 ){
-                fs << "        CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;\n";
-              }
-              fs << "        CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;\n"
-                 << "        CLANG_WARN_BOOL_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_COMMA = NO;\n"
-                 << "        CLANG_WARN_CONSTANT_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;\n"
-                 << "        CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;\n"
-                 << "        CLANG_WARN_DOCUMENTATION_COMMENTS = NO;\n"
-                 << "        CLANG_WARN_EMPTY_BODY = YES;\n"
-                 << "        CLANG_WARN_ENUM_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_INFINITE_RECURSION = YES;\n"
-                 << "        CLANG_WARN_INT_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;\n"
-                 << "        CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;\n"
-                 << "        CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;\n"
-                 << "        CLANG_WARN_STRICT_PROTOTYPES = YES;\n"
-                 << "        CLANG_WARN_SUSPICIOUS_MOVE = YES;\n"
-                 << "        CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;\n"
-                 << "        CLANG_WARN_UNREACHABLE_CODE = YES;\n"
-                 << "        CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;\n"
-                 << "        COPY_PHASE_STRIP = NO;\n"
-                 << "        CURRENT_PROJECT_VERSION = 1;\n"
-                 << "        DEBUG_INFORMATION_FORMAT = dwarf;\n"
-                 << "        ENABLE_STRICT_OBJC_MSGSEND = YES;\n"
-                 << "        ENABLE_TESTABILITY = YES;\n"
-                 << "        GCC_C_LANGUAGE_STANDARD = " + toLanguageC() + ";\n"
-                 << "        GCC_DYNAMIC_NO_PIC = NO;\n"
-                 << "        GCC_NO_COMMON_BLOCKS = YES;\n"
-                 << "        GCC_OPTIMIZATION_LEVEL = 0;\n"
-                 << "        GCC_PREPROCESSOR_DEFINITIONS = (\n";
-              fs << "          \"$(inherited)\",\n";
-              string dbgDefines = toDefinesDbg();
-              const auto& dbgVector = dbgDefines.splitAtCommas();
-              dbgVector.foreach(
-                [&]( const auto& define ){
-                  if( define.empty() ){
-                    return;
-                  }
-                  if( *define == '#' ){
-                    return;
-                  }
-                  fs << "          \"" + define + "\",\n";
-                }
-              );
-              fs << string( "        );\n" )
-                  + "        GCC_WARN_64_TO_32_BIT_CONVERSION = YES;\n"
-                  + "        GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;\n"
-                  + "        GCC_WARN_UNDECLARED_SELECTOR = YES;\n"
-                  + "        GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;\n"
-                  + "        GCC_WARN_UNUSED_FUNCTION = YES;\n"
-                  + "        GCC_WARN_UNUSED_VARIABLE = YES;\n";
-              if( !toPrefixHeader().empty() ){
-                fs << "        GCC_PRECOMPILE_PREFIX_HEADER = YES;\n";
-                fs << "        GCC_PREFIX_HEADER = \"../" + toPrefixHeader() + "\";\n";
-              }
-              fs << string( "        MACOSX_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" )
-                  + "        MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;\n"
-                  + "        MTL_FAST_MATH = YES;\n"
-                  + "        ONLY_ACTIVE_ARCH = YES;\n";
-              if( target == "macos"_64 ){
-                fs << "        SDKROOT = macosx;\n";
-              }else{
-                fs << "        SDKROOT = iphoneos;\n";
-              }
-              fs << "        VERSIONING_SYSTEM = \"apple-generic\";\n"
-                 << "        VERSION_INFO_PREFIX = \"\";\n"
-                 << "      };\n"
-                 << "      name = Debug;\n"
-                 << "    };\n";
-
-              //----------------------------------------------------------------
-              // RELEASE build configuration.
-              //----------------------------------------------------------------
-
-              fs << "    " + relConfig + " /* Release */ = {\n"
-                  + "      isa = XCBuildConfiguration;\n"
-                  + "      buildSettings = {\n";
-              if( toFlags()->bUniversalBinary ){
-                //Note: no ARCHS = ? gives us a universal binary.
-              }else if(( target == "ios" )||toFlags()->bAppleSilicon ){
-                fs << "        VALID_ARCHS = arm64;\n";
-                fs << "        ARCHS = arm64;\n";
-              }else{
-                fs << "        VALID_ARCHS = x86_64;\n";
-                fs << "        ARCHS = x86_64;\n";
-              }
-              fs << "        ALWAYS_SEARCH_USER_PATHS = NO;\n"
-                 << "        CLANG_ANALYZER_NONNULL = YES;\n"
-                 << "        CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;\n"
-                 << "        CLANG_CXX_LANGUAGE_STANDARD = \"" + toLanguage() + "\";\n"
-                 << "        CLANG_CXX_LIBRARY = \"libc++\";\n"
-                 << "        CLANG_ENABLE_MODULES = YES;\n"
-                 << "        CLANG_ENABLE_OBJC_ARC = " + enableARC + ";\n"
-                 << "        CLANG_ENABLE_OBJC_WEAK = YES;\n";
-              if( !bmp->bXcode11 ){
-                fs << "        CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;\n";
-              }
-              fs << "        CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;\n"
-                 << "        CLANG_WARN_BOOL_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_COMMA = YES;\n"
-                 << "        CLANG_WARN_CONSTANT_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;\n"
-                 << "        CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;\n"
-                 << "        CLANG_WARN_DOCUMENTATION_COMMENTS = YES;\n"
-                 << "        CLANG_WARN_EMPTY_BODY = YES;\n"
-                 << "        CLANG_WARN_ENUM_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_INFINITE_RECURSION = YES;\n"
-                 << "        CLANG_WARN_INT_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;\n"
-                 << "        CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;\n"
-                 << "        CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;\n"
-                 << "        CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;\n"
-                 << "        CLANG_WARN_STRICT_PROTOTYPES = YES;\n"
-                 << "        CLANG_WARN_SUSPICIOUS_MOVE = YES;\n"
-                 << "        CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;\n"
-                 << "        CLANG_WARN_UNREACHABLE_CODE = YES;\n"
-                 << "        CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;\n"
-                 << "        COPY_PHASE_STRIP = NO;\n"
-                 << "        CURRENT_PROJECT_VERSION = 1;\n"
-                 << "        DEBUG_INFORMATION_FORMAT = \"dwarf-with-dsym\";\n"
-                 << "        ENABLE_NS_ASSERTIONS = NO;\n"
-                 << "        ENABLE_STRICT_OBJC_MSGSEND = YES;\n"
-                 << "        GCC_C_LANGUAGE_STANDARD = " + toLanguageC() + ";\n"
-                 << "        GCC_NO_COMMON_BLOCKS = YES;\n"
-                 << "        GCC_OPTIMIZATION_LEVEL = fast;\n"
-                 << "        GCC_PREPROCESSOR_DEFINITIONS = (\n";
-              fs << "          \"$(inherited)\",\n";
-
-              //----------------------------------------------------------------
-              // RELEASE stuff.
-              //----------------------------------------------------------------
-
-              string relDefines = toDefinesRel();
-              const auto& vrel = relDefines.splitAtCommas();
-              vrel.foreach(
-                [&]( const string& define ){
-                  if( define.empty() ){
-                    return;
-                  }
-                  if( *define == '#' ){
-                    return;
-                  }
-                  fs << "          \"" + define + "\",\n";
-                }
-              );
-              fs << string( "        );\n" )
-                  + "        GCC_WARN_64_TO_32_BIT_CONVERSION = YES;\n"
-                  + "        GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;\n"
-                  + "        GCC_WARN_UNDECLARED_SELECTOR = YES;\n"
-                  + "        GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;\n"
-                  + "        GCC_WARN_UNUSED_FUNCTION = YES;\n"
-                  + "        GCC_WARN_UNUSED_VARIABLE = YES;\n";
-              if( !toPrefixHeader().empty() ){
-                fs << "        GCC_PRECOMPILE_PREFIX_HEADER = YES;\n";
-                fs << "        GCC_PREFIX_HEADER = \"../" + toPrefixHeader() + "\";\n";
-              }
-              if( target == "ios"_64 ){
-                fs << string( "        IPHONEOS_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" );
-              }else{
-                fs << string( "        MACOSX_DEPLOYMENT_TARGET = " + toDeployment() + ";\n" );
-              }
-              fs << "        MTL_ENABLE_DEBUG_INFO = NO;\n"
-                 << "        MTL_FAST_MATH = YES;\n";
-              if( target == "ios"_64 ){
-                fs << "        SDKROOT = iphoneos;\n";
-              }else{
-                fs << "        SDKROOT = macosx;\n";
-              }
-              fs << "        VERSIONING_SYSTEM = \"apple-generic\";\n"
-                 << "        VERSION_INFO_PREFIX = \"\";\n"
-                 << "      };\n"
-                 << "      name = Release;\n"
-                 << "    };\n";
-              fs << "    " + dbgNative + " /* Debug */ = {\n"
-                  + "      isa = XCBuildConfiguration;\n"
-                  + "      buildSettings = {\n";
-              if( toFlags()->bUniversalBinary ){
-                //Note: no ARCHS = ? gives us a universal binary.
-              }else if(( target == "ios" )||toFlags()->bAppleSilicon ){
-                fs << "        VALID_ARCHS = arm64;\n";
-                fs << "        ARCHS = arm64;\n";
-              }else{
-                fs << "        VALID_ARCHS = x86_64;\n";
-                fs << "        ARCHS = x86_64;\n";
-              }
-              if( hasEntitlements() ){
-                fs << "        CODE_SIGN_ENTITLEMENTS = ./"
-                   << toLabel()
-                   << ".entitlements;\n"
-                ;
-              }
-              fs << "        CODE_SIGN_STYLE = Automatic;\n";
-              if( !toTeamName().empty() ){
-                fs << "        DEVELOPMENT_TEAM = " + toTeamName() + ";\n";
-              }
-              fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-              fs << "          \"$(inherited)\",\n";
-              fs << "          \"@executable_path/../Frameworks\",\n";
-              fs << "        );\n";
-              fs << "        LIBRARY_SEARCH_PATHS = (\n";
-              auto libraryPaths = toFindLibsPaths().splitAtCommas();
-              libraryPaths.foreach(
-                [&]( const string& f ){
-                  auto dir = f;
-                  if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
-                    dir = "../" + f;
-                  }
-                  dir.replace( "$(CONFIGURATION)", "Debug" );
-                  // Fix corner case where 'dir' is destroyed.
-                  ccp end = strstr( dir, ".framework" );
-                  if( end ){
-                    dir = string( dir, end );
-                  }
-                  fs << "          " + dir + ",\n";
-                }
-              );
-              fs << "        );\n";
-              fs << "        FRAMEWORK_SEARCH_PATHS = (\n";
-              auto frameworkSearchPaths
-                = toFrameworkPaths()
-                . splitAtCommas();
-              frameworkSearchPaths.foreach(
-                [&]( const auto& _dir ){
-                  File dir( _dir );
-                  dir.replace( "$(CONFIGURATION)", "Debug" );
-                  fs << "          " + dir + ",\n";
-                }
-              );
-              fs << "        );\n";
-              auto paths = writeXCBuildConfigSystemHeaderSearch( fs );
-              switch( toBuild().hash() ){
-                //--------------------------------+-----------------------------
-                //application:{                   |
-
-                  case"application"_64:
-                    fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
-                    fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
-                    fs << "        ENABLE_HARDENED_RUNTIME = ";
-                    fs <<  string( toFlags()->bHardenedRuntime
-                      ? "YES"
-                      : "NO" );
-                    fs << + ";\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Debug" );
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Debug", target );
-                    fs << "        );\n";
-                    break;
-
-                //}:                              |
-                //framework:{                     |
-
-                  case"framework"_64:
-                    fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
-                    fs << "        DEFINES_MODULE = YES;\n";
-                    fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
-                    fs << "        DYLIB_CURRENT_VERSION = 1;\n";
-                    fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
-                    fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
-                    fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
-                    fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-                    fs << "          \"$(inherited)\",\n";
-                    fs << "          \"@executable_path/../Frameworks\",\n";
-                    fs << "          \"@loader_path/Frameworks\",\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Debug" );
-                    fs << "        );\n";
-                    fs << "        OTHER_CFLAGS = (\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Debug", target );
-                    fs << "        );\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
-                    break;
-
-                //}:                              |
-                //console:{                       |
-
-                  case"console"_64:
-                    if( target == "ios"_64 )
-                      e_break( "Cannot set the target to \"console\" for iOS." );
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
-                    fs << "        ENABLE_HARDENED_RUNTIME = ";
-                    fs << string( toFlags()->bHardenedRuntime
-                      ? "YES"
-                      : "NO" );
-                    fs << ";\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Debug" );
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Debug", target );
-                    fs << "        );\n";
-                    break;
-
-                //}:                              |
-                //bundle:{                        |
-
-                  case"bundle"_64:
-                    if( target == "ios"_64 )
-                      e_break( "Cannot set the target to \"console\" for iOS." );
-                    fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
-                    fs << "        DEFINES_MODULE = YES;\n";
-                    fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
-                    fs << "        DYLIB_CURRENT_VERSION = 1;\n";
-                    fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../"
-                         << inSources( Type::kPlist )[ 0 ].toWhere()
-                         << inSources( Type::kPlist )[ 0 ]
-                         << "\";\n";
-                    fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
-                    fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-                    fs << "          \"$(inherited)\",\n";
-                    fs << "          \"@executable_path/../PlugIns\",\n";
-                    fs << "          \"@loader_path/PlugIns\",\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Debug" );
-                    fs << "        );\n";
-                    fs << "        OTHER_CFLAGS = (\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Debug", target );
-                    fs << "        );\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
-                    break;
-
-                //}:                              |
-                //shared:{                        |
-
-                  case"shared"_64:
-                    if( target == "ios"_64 )
-                      e_break( "Cannot set the target to \"console\" for iOS." );
-                    fs << "        DEFINES_MODULE = YES;\n";
-                    fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
-                    fs << "        DYLIB_CURRENT_VERSION = 1;\n";
-                    fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
-                    fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-                    fs << "          \"$(inherited)\",\n";
-                    fs << "          \"@executable_path/../PlugIns\",\n";
-                    fs << "          \"@loader_path/PlugIns\",\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Debug" );
-                    fs << "        );\n";
-                    fs << "        OTHER_CFLAGS = (\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Debug", target );
-                    fs << "        );\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
-                    break;
-
-                //}:                              |
-                //static:{                        |
-
-                  case"static"_64:
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
-                    fs << "        EXECUTABLE_PREFIX = lib;\n";
-                    break;
-
-                //}:                              |
-                //--------------------------------+-----------------------------
-              }
-              fs << "        SKIP_INSTALL = YES;\n";
-              if( toBuild() == "bundle"_64 ){
-                fs << "        WRAPPER_EXTENSION = bundle;\n";
-              }
-              fs << "      };\n";
-              fs << "      name = Debug;\n";
-              fs << "    };\n";
-
-              //----------------------------------------------------------------
-              // Handle all the build types: Release.
-              //----------------------------------------------------------------
-
-              fs << "    " + relNative + " /* Release */ = {\n"
-                 << "      isa = XCBuildConfiguration;\n"
-                 << "      buildSettings = {\n";
-              if( hasEntitlements() ){
-                fs << "        CODE_SIGN_ENTITLEMENTS = "
-                   << toLabel()
-                   << ".entitlements;\n"
-                ;
-              }
-              fs << "        CODE_SIGN_STYLE = Automatic;\n";
-              if( !toTeamName().empty() ){
-                fs << "        DEVELOPMENT_TEAM = " + toTeamName() + ";\n";
-              }
-              fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-              fs << "          \"$(inherited)\",\n";
-              fs << "          \"@executable_path/../Frameworks\",\n";
-              fs << "        );\n";
-              fs << "        LIBRARY_SEARCH_PATHS = (\n";
-              libraryPaths.foreach(
-                [&]( const string& f ){
-                  auto dir = f;
-                  if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
-                    dir = "../" + f;
-                  }
-                  // Fix corner case where 'dir' is destroyed.
-                  ccp end = strstr( dir, ".framework" );
-                  if( end ){
-                    dir = string( dir, end );
-                  }
-                  dir.replace( "$(CONFIGURATION)", "Release" );
-                  fs << "          " + dir + ",\n";
-                }
-              );
-              fs << "        );\n";
-              fs << "        FRAMEWORK_SEARCH_PATHS = (\n";
-              frameworkSearchPaths.foreach(
-                [&]( const string& f ){
-                  auto dir = f;
-                  if(( *dir != '/' )&&( *dir != '~' )&&( *dir != '.' )){
-                    dir = "../" + f;
-                  }
-                  dir.replace( "$(CONFIGURATION)", "Release" );
-                  fs << "          " + dir + ",\n";
-                }
-              );
-              fs << "        );\n";
-              paths = writeXCBuildConfigSystemHeaderSearch( fs );
-              switch( toBuild().hash() ){
-                //--------------------------------+-----------------------------
-                //application:{                   |
-
-                  case"application"_64:
-                    fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
-                    fs << "        ENABLE_HARDENED_RUNTIME = ";
-                    fs << string( toFlags()->bHardenedRuntime ? "YES" : "NO" );
-                    fs << ";\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Release" );
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Release", target );
-                    fs << "        );\n";
-                    break;
-
-                //}:                              |
-                //framework:{                     |
-
-                  case"framework"_64:
-                    fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
-                    fs << "        DEFINES_MODULE = YES;\n";
-                    fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
-                    fs << "        DYLIB_CURRENT_VERSION = 1;\n";
-                    fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
-                    fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-                    fs << "          \"$(inherited)\",\n";
-                    fs << "          \"@executable_path/../Frameworks\",\n";
-                    fs << "          \"@loader_path/Frameworks\",\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Release" );
-                    fs << "        );\n";
-                    fs << "        OTHER_CFLAGS = (\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Release", target );
-                    fs << "        );\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
-                    break;
-
-                //}:                              |
-                //console:{                       |
-
-                  case"console"_64:
-                    if( target == "ios"_64 )
-                      e_break( "Cannot set the target to \"console\" for iOS." );
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
-                    fs << "        ENABLE_HARDENED_RUNTIME = ";
-                    fs << string( toFlags()->bHardenedRuntime ? "YES" : "NO" ) + ";\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Release" );
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Release", target );
-                    fs << "        );\n";
-                    break;
-
-                //}:                              |
-                //bundle:{                        |
-
-                  case"bundle"_64:
-                    if( target == "ios"_64 )
-                      e_break( "Cannot set the target to \"console\" for iOS." );
-                    fs << "        COMBINE_HIDPI_IMAGES = YES;\n";
-                    fs << "        DEFINES_MODULE = YES;\n";
-                    fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
-                    fs << "        DYLIB_CURRENT_VERSION = 1;\n";
-                    fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/PlugIns\";\n";
-                    fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-                    fs << "          \"$(inherited)\",\n";
-                    fs << "          \"@executable_path/../PlugIns\",\n";
-                    fs << "          \"@loader_path/PlugIns\",\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Debug" );
-                    fs << "        );\n";
-                    fs << "        OTHER_CFLAGS = (\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Debug", target );
-                    fs << "        );\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
-                    break;
-
-                //}:                              |
-                //shared:{                        |
-
-                  case"shared"_64:
-                    if( target == "ios"_64 )
-                      e_break( "Cannot set the target to \"console\" for iOS." );
-                    fs << "        DEFINES_MODULE = YES;\n";
-                    fs << "        DYLIB_COMPATIBILITY_VERSION = 1;\n";
-                    fs << "        DYLIB_CURRENT_VERSION = 1;\n";
-                    fs << "        DYLIB_INSTALL_NAME_BASE = \"@rpath\";\n";
-                    if( !inSources( Type::kPlist ).empty() )
-                      fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                    fs << "        INSTALL_PATH = \"$(LOCAL_LIBRARY_DIR)/Frameworks\";\n";
-                    fs << "        LD_RUNPATH_SEARCH_PATHS = (\n";
-                    fs << "          \"$(inherited)\",\n";
-                    fs << "          \"@executable_path/../Frameworks\",\n";
-                    fs << "          \"@loader_path/Frameworks\",\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_CPLUSPLUSFLAGS = (\n";
-                    addOtherCppFlags( "Release" );
-                    fs << "        );\n";
-                    fs << "        OTHER_CFLAGS = (\n";
-                    fs << "        );\n";
-                    fs << "        OTHER_LDFLAGS = (\n";
-                    if( toFlags()->bLoadAllSymbols )
-                      fs << "          -all_load,\n";
-                    addOtherLDFlags( "Release", target );
-                    fs << "        );\n";
-                    fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME:c99extidentifier)\";\n";
-                    break;
-
-                //}:                              |
-                //static:{                        |
-
-                  case"static"_64:
-                    fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
-                    fs << "        EXECUTABLE_PREFIX = lib;\n";
-                    break;
-
-                //}:                              |
-                //--------------------------------+-----------------------------
-              }
-              fs << "        SKIP_INSTALL = YES;\n";
-              if( toBuild() == "bundle"_64 ){
-                fs << "        WRAPPER_EXTENSION = bundle;\n";
-              }
-              fs << "      };\n";
-              fs << "      name = Release;\n";
-              fs << "    };\n";
+              writeXCBuildConfigurationSectionDbg( fs, target, dbgNative, dbgConfig );
+              writeXCBuildConfigurationSectionRel( fs, target, relNative, relConfig );
             }
           );
           fs << "    /* End XCBuildConfiguration section */\n";
