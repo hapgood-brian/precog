@@ -726,7 +726,7 @@ using namespace fs;
                 // Verbose comments (good for PBX format).
                 //--------------------------------------------------------------
 
-                if( it->tolower().hash() == "--verbose"_64 ){
+                if( it->tolower().hash() == "--verbose-pbx"_64 ){
                   Workspace::bmp->bVerbose = 1;
                   break;
                 }
