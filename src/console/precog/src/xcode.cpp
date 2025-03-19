@@ -506,10 +506,11 @@ using namespace fs;
         else return;
         // Produce a forced reference: always succeeds!
         const auto forcedRef = e_forceref( file );
-        fs << "    "
-           << forcedRef
-           << " /* [e_forceref] "
-           << file.filename().c_str()
+        fs << "    " << forcedRef;
+        if( Workspace::bmp->bVerbose )
+             fs << " /* [forceref] ";
+        else fs << " /* ";
+        fs << file.filename().c_str()
            << " */"
            << " = {isa = PBXFileReference; "
            << explicitT
@@ -2329,9 +2330,11 @@ using namespace fs;
                   else out << " /* ";
                   out << f.filename()
                       << ".framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                      << e_forceref( f )// Force don't just trap Hapgood.
-                      << " /* [e_forceref] "
-                      << f.filename();
+                      << e_forceref( f );// Force don't just trap Hapgood.
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [forceref] ";
+                  else out << " /* ";
+                  out << f.filename();
                   out << " */; };\n";
                 }else if( f.ext().empty() ){// <-- ie, the eon framework.
                   auto found = false;
@@ -2678,9 +2681,11 @@ using namespace fs;
                 else out << " /* ";
                 out << f.filename()
                     << " in Sources */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; };\n";
               }
             );
@@ -2705,9 +2710,11 @@ using namespace fs;
                 else out << " /* ";
                 out << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; };\n";
               }
             );
@@ -2885,10 +2892,11 @@ using namespace fs;
                   if( ___.find(    f.hash() )==___.end() )
                       ___.emplace( f.hash() );
                   else return;
-                  fs << "        " // Library reference per child.
-                     << f.toFileID()
-                     << " /* [FileID] "
-                     << f.filename();
+                  fs << "        " << f.toFileID();
+                  if( Workspace::bmp->bVerbose )
+                       fs << " /* [FileID] ";
+                  else fs << " /* ";
+                  fs << f.filename();
                   fs << " */,\n";
                 }
               );
@@ -2922,10 +2930,11 @@ using namespace fs;
                     if(__.find(    f.hash() )==__.end() )
                        __.emplace( f.hash() );
                     else return;
-                    fs << "        " // Library reference per child.
-                       << e_forceref( f )
-                       << " /* [e_forceref] "
-                       << f.filename();
+                    fs << "        " << e_forceref( f );
+                    if( Workspace::bmp->bVerbose )
+                         fs << " /* [forceref] ";
+                    else fs << " /* ";
+                    fs << f.filename();
                     fs << " */,\n";
                   }
                 );
@@ -3000,10 +3009,12 @@ using namespace fs;
                 files.foreach(
                   [&]( const File& file ){
                     // File reference added per child.
-                    fs << "        "
-                       << e_forceref( file )
-                       << " /* [e_forceref] " + file.filename()
-                       << " */,\n";
+                    fs << "        " << e_forceref( file );
+                    if( Workspace::bmp->bVerbose )
+                         fs << " /* [forceref] ";
+                    else fs << " /* ";
+                    fs <<  file.filename();
+                    fs << " */,\n";
                   }
                 );
                 fs << "      );\n";
@@ -3039,10 +3050,11 @@ using namespace fs;
             );
             files.foreach(
               [&]( const File& f ){
-                fs << "        "
-                   << e_forceref( f )
-                   << " /* [e_forceref] "
-                   << f.filename();
+                fs << "        " << e_forceref( f );
+                if( Workspace::bmp->bVerbose )
+                     fs << " /* [forceref] ";
+                else fs << " /* ";
+                fs << f.filename();
                 fs << " */,\n";
               }
             );
@@ -3090,12 +3102,13 @@ using namespace fs;
                 }
               );
               files.foreach(
-                [&]( const auto& f ){ fs
-                  << "        "
-                  << f.toFileID()
-                  << " /* [FileID] "
-                  << ccp( f )
-                  << " */,\n";
+                [&]( const auto& f ){
+                  fs << "        " << f.toFileID();
+                  if( Workspace::bmp->bVerbose )
+                       fs << " /* [FileID] ";
+                  else fs << " /* ";
+                  fs << ccp( f );
+                  fs << " */,\n";
                 }
               );
               fs << "      );\n";
@@ -3135,10 +3148,11 @@ using namespace fs;
             );
             files.foreach(
               [&]( const File& f ){
-                fs << "        "
-                   << e_forceref( f )
-                   << " /* [e_forceref] "
-                   << f.filename() + " */,\n";
+                fs << "        " << e_forceref( f );
+                if( Workspace::bmp->bVerbose )
+                     fs << " /* [forceref] ";
+                else fs << " /* ";
+                fs << f.filename() + " */,\n";
               }
             );
             fs << "      );\n";
