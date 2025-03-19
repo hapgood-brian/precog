@@ -833,10 +833,11 @@ using namespace fs;
                     return;
                   fs << "        ";
                   fs << f.toBuildID();
-                  fs << " /* [BuildID] "
-                    + f.filename()
-                    + " in CopyFiles */,\n"
-                  ;
+                  if( Workspace::bmp->bVerbose )
+                       fs << " /* [BuildID] ";
+                  else fs << " /* ";
+                  fs << f.filename()
+                     << " in CopyFiles */,\n";
                 }
               , nullptr );
 
@@ -852,10 +853,11 @@ using namespace fs;
               , [&]( const File& f ){
                   fs << "        ";
                   fs << f.toBuildID();
-                  fs << " /* [BuildID] "
-                    + f.filename()
-                    + " in CopyFiles */,\n"
-                  ;
+                  if( Workspace::bmp->bVerbose )
+                       fs << " /* [BuildID] ";
+                  else fs << " /* ";
+                  fs << f.filename();
+                  fs << " in CopyFiles */,\n";
                 }
               , nullptr
             );
@@ -892,10 +894,12 @@ using namespace fs;
                       if( target.tolower().hash() != "macos"_64 )
                         break;
                       fs << "        ";
-                      fs << f.toBuildID()
-                         << " /* [BuildID] "
-                         << f.filename()
-                         << " in Embed Frameworks */,\n";
+                      fs << f.toBuildID();
+                      if( Workspace::bmp->bVerbose )
+                           fs << " /* [BuildID] ";
+                      else fs << " /* ";
+                      fs << f.filename();
+                      fs << " in Embed Frameworks */,\n";
                       break;
                     }
                   }
@@ -920,7 +924,10 @@ using namespace fs;
                       return;
                     fs << "        ";
                     fs << f.toBuildID();
-                    fs << " /* [BuildID] " + f.filename();
+                    if( Workspace::bmp->bVerbose )
+                         fs << " /* [BuildID] ";
+                    else fs << " /* ";
+                    fs << f.filename();
                     fs << " in CopyFiles */,\n";
                   }
                 }
@@ -1014,11 +1021,12 @@ using namespace fs;
                     return;
                   if( f.toBuildID().empty() )
                     e_break( "You've found a bug! Nil build ID." );
-                  fs << "        "
-                     << f.toBuildID()
-                     << " /* [BuildID] "
-                     << f.filename()
-                     << " in Sources */,\n";
+                  fs << "        " << f.toBuildID();
+                  if( Workspace::bmp->bVerbose )
+                       fs << " /* [BuildID] ";
+                  else fs << " /* ";
+                  fs << f.filename();
+                  fs << " in Sources */,\n";
                 }
               );
               fs << "      );\n";
@@ -1334,10 +1342,11 @@ using namespace fs;
                   // Reference in frameworks.
                   //------------------------------------------------------------
 
-                  out << "    "
-                    + f.toBuildID()
-                    + " /* [BuildID] "
-                    + f.filename();
+                  out << "    " + f.toBuildID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [BuildID] ";
+                  else out << " /* ";
+                  out << f.filename();
                   switch( ext ){
                     case".framework"_64:
                       out << " in Frameworks */ = {isa = PBXBuildFile; fileRef = ";
@@ -1446,10 +1455,11 @@ using namespace fs;
                       case".tbd"_64:
                         [[fallthrough]];
                       case".a"_64:/**/{
-                        out << "    "
-                          + f.toBuildID()
-                          + " /* [BuildID] "
-                          + f.filename();
+                        out << "    " << f.toBuildID();
+                        if( Workspace::bmp->bVerbose )
+                             out << " /* [BuildID] ";
+                        else out << " /* ";
+                        out << f.filename();
                         break;
                       }
                       default:/**/{
@@ -1511,10 +1521,12 @@ using namespace fs;
                       out << " in Statics */ = {isa = PBXBuildFile; fileRef = ";
                       break;
                   }
-                  out << f.toFileID()
-                    + " /* [FileID] "
-                    + f.filename()
-                    + " */; };\n";
+                  out << f.toFileID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [FileID] ";
+                  else out << " /* ";
+                  out << f.filename()
+                      << " */; };\n";
                   ++it;
                 }
               }
@@ -1598,10 +1610,11 @@ using namespace fs;
                     return false;
                   }
                 );
-                out << "    "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << file
+                out << "    " << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << file
                     << " in Frameworks"
                     << " */ = "
                     << "{isa = PBXFileReference;"
@@ -1635,10 +1648,11 @@ using namespace fs;
                     return false;
                   }
                 );
-                out << "    "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << file
+                out << "    " << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << file
                     << " in Frameworks"
                     << " */ = "
                     << "{isa = PBXFileReference;"
@@ -1712,10 +1726,11 @@ using namespace fs;
                 );
                 if( sourceTree.empty() )
                   break;
-                out << "    "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << file
+                out << "    " << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << file
                     << " in Sources"
                     << " */ = "
                     << "{isa = PBXFileReference;"
@@ -1767,10 +1782,11 @@ using namespace fs;
                     return false;
                   }
                 );
-                out << "    "
-                    << fileID
-                    << " /* [FileID] "
-                    << file
+                out << "    " << fileID;
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << file
                     << " in Embed Frameworks"
                     << " */ = "
                     << "{isa = PBXFileReference;"
@@ -1799,10 +1815,11 @@ using namespace fs;
               case 0:/* ie, CoreFoundation[.framework] */{
                 string ext;
                 ext << ".framework";
-                out << "    "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << file
+                out << "    " << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << file
                     << " in Frameworks"
                     << " */ = "
                     << "{isa = PBXFileReference;"
@@ -1926,10 +1943,11 @@ using namespace fs;
             }
             const auto& osFilename = f.os().filename();
             const auto& osWhere    = f.toWhere().os();
-            out << "    "
-                << f.toFileID()
-                << " /* [FileID] "
-                << f.os().filename()
+            out << "    " << f.toFileID();
+            if( Workspace::bmp->bVerbose )
+                 out << " /* [FileID] ";
+            else out << " /* ";
+            out << f.os().filename()
                 << " */ = {isa = PBXFileReference; lastKnownFileType = "
                 << lastKnownFileType
                 << "; name = "    << osFilename
@@ -2032,11 +2050,16 @@ using namespace fs;
                   }
                 }
                 out << "    " + f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
                 if( !isProduct ){
-                  out << " /* [FileID] " << _lib << " */ = {isa = PBXFileReference; lastKnownFileType = ";
-                }else{
-                  out << " /* " << _lib << " */ = {isa = PBXFileReference; explicitFileType = ";
-                }
+                  out << _lib
+                      << " */ = {isa = PBXFileReference; lastKnownFileType = ";
+                }else
+                  out << " /* "
+                      << _lib
+                      << " */ = {isa = PBXFileReference; explicitFileType = ";
                 out << fileType
                     << "; name = "
                     << _lib.filename()
@@ -2300,10 +2323,11 @@ using namespace fs;
 
                 if( f.isSystemFramework() ){
                   (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
-                  out << "    "
-                      << f.toBuildID()
-                      << " /* [LinkWith] "
-                      << f.filename()
+                  out << "    " << f.toBuildID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [LinkWith] ";
+                  else out << " /* ";
+                  out << f.filename()
                       << ".framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "
                       << e_forceref( f )// Force don't just trap Hapgood.
                       << " /* [e_forceref] "
@@ -2320,28 +2344,34 @@ using namespace fs;
                           f << ".framework";
                           const_cast<Xcode*>( this )
                             -> inSources( Type::kPlatform ).push( f );
-                          out << "    "
-                              << f.toBuildID()
-                              << " /* [BuildID] "
-                              << f.filename()
+                          out << "    " << f.toBuildID();
+                          if( Workspace::bmp->bVerbose )
+                               out << " /* [BuildID] ";
+                          else out << " /* ";
+                          out << f.filename()
                               << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                              << f.toFileID() // traps bugs for ya, Hapgood!
-                              << " /* [FileID] "
-                              << f.filename();
+                              << f.toFileID();// traps bugs for ya, Hapgood!
+                          if( Workspace::bmp->bVerbose )
+                               out << " /* [FileID] ";
+                          else out << " /* ";
+                          out << f.filename();
                           out << " */; };\n";
                           break;
                         case"bundle"_64:
                           f << ".bundle";
                           const_cast<Xcode*>( this )
                             -> inSources( Type::kPlatform ).push( f );
-                          out << "    "
-                              << f.toBuildID()
-                              << " /* [BuildID]"
-                              << f.filename()
+                          out << "    " << f.toBuildID();
+                          if( Workspace::bmp->bVerbose )
+                               out << " /* [BuildID] ";
+                          else out << " /* ";
+                          out << f.filename()
                               << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                              << f.toFileID() // traps bugs for ya, Hapgood!
-                              << " /* [FileID] "
-                              << f.filename();
+                              << f.toFileID();// traps bugs for ya, Hapgood!
+                          if( Workspace::bmp->bVerbose )
+                               out << " /* [FileID] ";
+                          else out << " /* ";
+                          out << f.filename();
                           out << " */; };\n";
                           break;
                         case"shared"_64:
@@ -2377,14 +2407,17 @@ using namespace fs;
                 if( !ext_hash )
                   return;
                 (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; };\n";
               }
             );
@@ -2420,35 +2453,46 @@ using namespace fs;
                   case".dylib"_64:
                     break;
                   default:/* Everything else */{
-                    out << "    "
-                        << f.toBuildID()
-                        << " /* [BuildID (EmbedFiles)] "
-                        << f.filename()
+                    out << "    " << f.toBuildID();
+                    if( Workspace::bmp->bVerbose )
+                         out << " /* [BuildID (EmbedFiles)] ";
+                    else out << " /* ";
+                    out << f.filename()
                         << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                        << f.toFileID()
-                        << " /* [FileID] "
-                        << f.filename();
+                        << f.toFileID();
+                    if( Workspace::bmp->bVerbose )
+                         out << " /* [FileID] ";
+                    else out << " /* ";
+                    out << f.filename();
                     out << " */; };\n";
                     break;
                   }
                 }
-                if( f.isEmbed() )
-                  out << "    "
-                      << f.toBuildID()
-                      << " /* [BuildID (EmbedFiles)] "
-                      << f.filename()
+                if( f.isEmbed() ){
+                  out << "    " << f.toBuildID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [BuildID (EmbedFiles)] ";
+                  else out << " /* ";
+                  out << f.filename()
                       << " in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                      << f.toFileID()
-                      << " /* [FileID] "
-                      << f.filename();
-             else out << "    "
-                      << f.toBuildID()
-                      << " /* [buildID] "
-                      << f.filename()
+                      << f.toFileID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [FileID] ";
+                  else out << " /* ";
+                  out << f.filename();
+                }else{
+                  out << "    " << f.toBuildID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [buildID] ";
+                  else out << " /* ";
+                  out << f.filename()
                       << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
-                      << f.toFileID()
-                      << " /* [FileID] "
-                      << f.filename();
+                      << f.toFileID();
+                  if( Workspace::bmp->bVerbose )
+                       out << " /* [FileID] ";
+                  else out << " /* ";
+                  out << f.filename();
+                }
                 out << " */;";
                 auto stripper = false;
                 switch( hash ){
@@ -2488,14 +2532,17 @@ using namespace fs;
             ignore( files, toIgnoreParts() );
             files.foreach(
               [&]( auto& f ){
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; };\n";
               }
             );
@@ -2517,14 +2564,17 @@ using namespace fs;
               [&]( auto& f ){
                 if( f.empty() )
                   return;
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Resource */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; };\n";
               }
             );
@@ -2541,14 +2591,17 @@ using namespace fs;
             ignore( files, toIgnoreParts() );
             files.foreach(
               [&]( auto& f ){
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in CopyFiles */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; };\n";
               }
             );
@@ -2563,14 +2616,17 @@ using namespace fs;
             ignore( files, toIgnoreParts() );
             files.foreach(
               [&]( auto& f ){
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; settings = {ATTRIBUTES = (Private, ); }; };\n";
               }
             );
@@ -2585,14 +2641,17 @@ using namespace fs;
             ignore( files, toIgnoreParts() );
             files.foreach(
               [&]( auto& f ){
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
-                    << f.toFileID()
-                    << " /* [FileID] "
-                    << f.filename();
+                    << f.toFileID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [FileID] ";
+                else out << " /* ";
+                out << f.filename();
                 out << " */; settings = {ATTRIBUTES = (Public, ); }; };\n";
               }
             );
@@ -2613,10 +2672,11 @@ using namespace fs;
               [&]( auto& f ){
                 if( f.empty() )
                   return;
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Sources */ = {isa = PBXBuildFile; fileRef = "
                     << f.toFileID()
                     << " /* [FileID] "
@@ -2639,10 +2699,11 @@ using namespace fs;
               [&]( auto& f ){
                 if( f.empty() )
                   return;
-                out << "    "
-                    << f.toBuildID()
-                    << " /* [BuildID] "
-                    << f.filename()
+                out << "    " << f.toBuildID();
+                if( Workspace::bmp->bVerbose )
+                     out << " /* [BuildID] ";
+                else out << " /* ";
+                out << f.filename()
                     << " in Headers */ = {isa = PBXBuildFile; fileRef = "
                     << f.toFileID()
                     << " /* [FileID] "

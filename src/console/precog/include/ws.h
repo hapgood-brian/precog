@@ -794,6 +794,8 @@
           , bExtMacho:1
           , bExtElf:1
           , bExtPE:1
+          // Debugging
+          , bVerbose:1
         );
 
         e_var( u64, e,        Language ) = 0ull;
