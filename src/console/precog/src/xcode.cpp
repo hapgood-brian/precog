@@ -359,10 +359,15 @@ using namespace fs;
             (( string& ) fi )=( in_path );
             fi.setWhere( fi.path() );
             inSources( Type::kPlist ).push( fi );
-            e_msgf( "  Found PLIST %s @ %s for project %s."
-              , ccp( fi.filename() )
-              , ccp( fi.toWhere().path() )
-              , ccp( toLabel() ));
+            #if !e_compiling( golden )
+              static const auto isSpew = e_getCvar( bool, "SPEW" );
+              if( !isSpew )
+                break;
+              e_msgf( "  Found PLIST %s @ %s for project %s."
+                , ccp( fi.filename() )
+                , ccp( fi.toWhere().path() )
+                , ccp( toLabel() ));
+            #endif
             break;
           }
           case".rtf"_64:
@@ -687,7 +692,7 @@ using namespace fs;
                       if( !x.isLabel( fl ))
                         return true;
                       e_msgf(// Display what we're going to link with.
-                          "  Linking %s"
+                          "  Link With %s"
                         , ccp( fl ));
                       ok = true;
                       return!ok;
@@ -2300,7 +2305,7 @@ using namespace fs;
           // Moved "Generating" here so it's the first thing we do.
           //--------------------------------------------------------------------
 
-          e_msgf( "Generating %s" , ccp( toLabel().tolower() ));
+          e_msgf( " Generating %s" , ccp( toLabel().tolower() ));
           File::filerefs.clear();
 
           //--------------------------------------------------------------------
@@ -2444,8 +2449,11 @@ using namespace fs;
                 // Embedding and copying libraries.
                 //--------------------------------------------------------------
 
-                if( f.isEmbed() )
-                  e_msgf( "  Embedding %s", ccp( f ));
+                #if !e_compiling( golden )
+                  static const auto isSpew = e_getCvar( bool, "SPEW" );
+                  if( isSpew && f.isEmbed() )
+                    e_msgf( "  Embedding %s", ccp( f ));
+                #endif
                 const auto& ext = f.ext().tolower();
                 const auto hash = ext.hash();
                 switch( hash ){
