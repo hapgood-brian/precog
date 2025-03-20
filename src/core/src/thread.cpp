@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 
 #if !e_compiling( web )
-  #if e_compiling( microsoft )
+  #if e_compiling( win64 )
     #define WIN32_LEAN_AND_MEAN
     #define NOMINMAX
     #include<windows.h>
@@ -31,7 +31,7 @@ thread_local string text;
   //Global:{                                      |
 
     void e_backoff( const double start ){
-      #if !e_compiling( microsoft )
+      #if !e_compiling( win64 )
         const double now = e_seconds();
         const double dur = now - start;
         if( dur > .20 ){
@@ -102,7 +102,7 @@ thread_local string text;
         #if e_compiling( osx )
           text.catf( "EON Worker:: %4u", tid );
           pthread_setname_np( text );
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           SetThreadDescription(
               GetCurrentThread()
             , L"EON Worker"
@@ -311,7 +311,7 @@ thread_local string text;
         #if e_compiling( web )
           static __thread u32 tid = 1;
           tidResult = tid++;
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           tidResult = GetCurrentThreadId();
         #elif e_compiling( android )
           tidResult = u32( gettid() );

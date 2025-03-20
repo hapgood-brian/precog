@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 
 #if !e_compiling( web )
-  #if !e_compiling( microsoft )
+  #if !e_compiling( win64 )
     #include<execinfo.h>
   #endif
   #include<atomic>
@@ -25,7 +25,7 @@ using namespace atomic;
         #define USE_SPINLOCK 0
         #define USE_LOGGING  0
         #define USE_YIELDS   1
-      #elif e_compiling( microsoft )
+      #elif e_compiling( win64 )
         #define USE_SPINLOCK 1
         #define USE_LOGGING  0
         #define USE_YIELDS   4
@@ -82,7 +82,7 @@ using namespace atomic;
                 }
               );
               #if USE_LOGGING
-                #if e_compiling( microsoft )
+                #if e_compiling( win64 )
                   sprintf_s( msgBuffer
                    , sizeof( msgBuffer )
                 #else
@@ -119,7 +119,7 @@ using namespace atomic;
                 }
               );
               #if USE_LOGGING
-                #if e_compiling( microsoft )
+                #if e_compiling( win64 )
                   sprintf_s( msgBuffer
                    , sizeof( msgBuffer )
                 #else
@@ -219,7 +219,7 @@ using namespace atomic;
                   bResult = true;
                 }
                 #if USE_LOGGING
-                  #if e_compiling( microsoft )
+                  #if e_compiling( win64 )
                     sprintf_s( msgBuffer
                      , sizeof( msgBuffer )
                   #else
@@ -268,7 +268,7 @@ using namespace atomic;
               m_atomicWrites.release();
               #if USE_LOGGING
                 const auto tid = Thread::tid();
-                #if e_compiling( microsoft )
+                #if e_compiling( win64 )
                   sprintf_s( msgBuffer
                    , sizeof( msgBuffer )
                 #else

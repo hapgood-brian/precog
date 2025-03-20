@@ -542,10 +542,10 @@ using namespace fs;
                     fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
                   #elif e_compiling( osx )
                     fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
-                  #elif e_compiling( microsoft )
+                  #elif e_compiling( win64 )
                     fs << "rule SHARED_DLL_" << toLabel().toupper() + "\n";
                   #else
-                    e_break( "Must define linux, macos or microsoft" );
+                    e_break( "Must define linux, macos or win64" );
                   #endif
                 }
               }else{
@@ -553,10 +553,10 @@ using namespace fs;
                   fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
                 #elif e_compiling( osx )
                   fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
-                #elif e_compiling( microsoft )
+                #elif e_compiling( win64 )
                   fs << "rule SHARED_DLL_" << toLabel().toupper() + "\n";
                 #else
-                  e_break( "Must define linux, macos or microsoft" );
+                  e_break( "Must define linux, macos or win64" );
                 #endif
               }
             }
@@ -615,10 +615,10 @@ using namespace fs;
                     fs << "  description = Compiling ELF binary $out\n";
                   #elif e_compiling( osx )
                     fs << "  description = Compiling MACHO binary $out\n";
-                  #elif e_compiling( microsoft )
+                  #elif e_compiling( win64 )
                     fs << "  description = Compiling PE binary $out\n";
                   #else
-                    e_break( "Must define linux, macos or microsoft" );
+                    e_break( "Must define linux, macos or win64" );
                   #endif
                 }
               }else{
@@ -626,10 +626,10 @@ using namespace fs;
                   fs << "  description = Compiling ELF binary $out\n";
                 #elif e_compiling( osx )
                   fs << "  description = Compiling MACHO binary $out\n";
-                #elif e_compiling( microsoft )
+                #elif e_compiling( win64 )
                   fs << "  description = Compiling PE binary $out\n";
                 #else
-                  e_break( "Must define linux, macos or microsoft" );
+                  e_break( "Must define linux, macos or win64" );
                 #endif
               }
             }

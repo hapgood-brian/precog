@@ -155,7 +155,6 @@
               return 0;
             }
             const auto sanity=( m_uTail % m_uStride );
-            e_assert( !sanity );
             if( !sanity ){
               return( m_uTail / m_uStride );
             }
@@ -506,7 +505,6 @@
             */
 
           e_forceinline ccp begin()const{
-            e_assert( m_pData );
             return m_pData;
           }
 
@@ -519,7 +517,6 @@
             */
 
           e_forceinline cp begin(){
-            e_assert( m_pData );
             return m_pData;
           }
 
@@ -532,7 +529,6 @@
             */
 
           e_forceinline ccp end()const{
-            e_assert( m_pData );
             return m_pData + bytes();
           }
 
@@ -545,7 +541,6 @@
             */
 
           e_forceinline cp end(){
-            e_assert( m_pData );
             return m_pData + bytes();
           }
 
@@ -770,8 +765,6 @@
             if( m_uSize != st.m_uSize ){
               return false;
             }
-            e_sanity_check( !e_isbad( st.m_pData ));
-            e_sanity_check( !e_isbad( m_pData ));
             return !memcmp( m_pData, st.m_pData, size_t( bytes() ));
           }
 

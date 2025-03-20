@@ -495,14 +495,10 @@
       //tuple:{                                   |
 
         e_forceinline self tuple( const u32 i )const{
-          e_assert( valid() );
-          e_assert( i < 8 );
           return ((self*)&m_tPosition)[ i ];
         }
 
         e_forceinline self& tuple( const u32 i ){
-          e_assert( valid() );
-          e_assert( i < 8 );
           return ((self*)&m_tPosition)[i];
         }
 
@@ -519,7 +515,6 @@
 
         e_forceinline void scale( const self& s ){
           m_fScale *= s;
-          e_assert( valid() );
         }
 
         /** \brief Get copy at given scale.
@@ -532,7 +527,6 @@
           */
 
         e_forceinline QST3 atScale( const self& s )const{
-          e_assert( valid() && s.valid() );
           return QST3( m_qRotation, s, m_tPosition );
         }
 
@@ -559,7 +553,6 @@
     {}
 
     e_noinline_or_debug QST3( const std::initializer_list<T>& ilist ){
-      e_assert( ilist.size() <= 7 );
       u32 i = 0;
       for( auto& v : ilist ){
         if( i < 3 ){

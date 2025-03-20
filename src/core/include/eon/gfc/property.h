@@ -245,7 +245,6 @@
 
           template<typename T,u32 N> e_noinline void setValue( const array<T,N>& value ){
             e_guardw( m_tLock );
-            e_assert( isArray() );
             value.foreach(
               [&]( const T& t ){
                 setValue( t );
@@ -261,7 +260,6 @@
 
           template<typename T> e_noinline void setValue( const vector<T>& value ){
             e_guardw( m_tLock );
-            e_assert( isVector() );
             value.foreach(
               [&]( const T& t ){
                 setValue( t );
@@ -564,8 +562,6 @@
             , m_pOuter( pOuter )
             , m_uType(  uType  )
             , m_pData(  pData  ){
-          e_sanity_check( !e_isbad( m_pOuter ));
-          e_sanity_check( !e_isbad( m_pData ));
           setSize( uSize );
         }
 
@@ -588,8 +584,6 @@
             , m_uType(                       lvalue.m_uType     )
             , m_pData(                       lvalue.m_pData     ){
           m_tFlags.all =                     lvalue.m_tFlags.all;
-          e_sanity_check( !e_isbad( m_pOuter ));
-          e_sanity_check( !e_isbad( m_pData ));
         }
 
         /** \brief Move constructor.
@@ -623,8 +617,6 @@
           rvalue.m_pData      = nullptr;
           rvalue.m_uType      = 0;
           rvalue.m_tFlags.all = 0;
-          e_sanity_check( !e_isbad( m_pOuter ));
-          e_sanity_check( !e_isbad( m_pData ));
         }
 
         /** \brief Heading property.

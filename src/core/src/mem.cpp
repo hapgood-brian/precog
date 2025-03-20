@@ -7,7 +7,7 @@
 
 #if e_compiling( web )
   #include<memory.h>
-#elif e_compiling( microsoft )
+#elif e_compiling( win64 )
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
   #include<windows.h>
@@ -19,7 +19,7 @@
 #endif
 #include<stdlib.h>
 
-#if e_compiling( microsoft )
+#if e_compiling( win64 )
   #define __compiling_ned_malloc__ 0
   #define __compiling_rp_malloc__  0 //Cannot enable this unless core lib is a DLL.
   #define __compiling_mem_checks__ 0 //__compiling_debug__
@@ -187,7 +187,7 @@ using namespace gfc;
 //}:                                              |
 //Operate:{                                       |
 
-#if !e_compiling( microsoft )
+#if !e_compiling( win64 )
   vp operator new( std::size_t bytes ){
     #if e_compiling( mem_checks )
       bytes += 20;
@@ -338,7 +338,7 @@ using namespace gfc;
     //e_pagesize:{                                |
 
       u32 e_pagesize(){
-        #if e_compiling( microsoft )
+        #if e_compiling( win64 )
           SYSTEM_INFO sysInfo;
           GetSystemInfo( &sysInfo );
           return u32( sysInfo.dwPageSize );
@@ -356,7 +356,7 @@ using namespace gfc;
         #elif e_compiling( rp_malloc )
           return rpaligned_alloc( align, size );
         #else
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             return _aligned_malloc( size, align );
           #elif e_compiling( osx )||e_compiling( ios )||e_compiling( linux )
             cp pResult = nullptr;
@@ -382,7 +382,7 @@ using namespace gfc;
           free( vp( ptr ));
         #elif e_compiling( rp_malloc )
           return rpfree( vp( ptr ));
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           _aligned_free( vp( ptr ));
         #elif e_compiling( osx )||e_compiling( ios )||e_compiling( linux )
           free( vp( ptr ));
@@ -487,7 +487,7 @@ using namespace gfc;
           return false;
         }
         #if e_compiling( sanity )
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             return( TRUE == IsBadReadPtr( ptr, 1 ));
           #elif e_compiling( osx )
             vm_size_t size;

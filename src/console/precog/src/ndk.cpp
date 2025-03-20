@@ -9,7 +9,7 @@
 #include"luacore.h"
 #include"std.h"
 #include"ws.h"
-#if e_compiling( microsoft )
+#if e_compiling( win64 )
   //TODO: Figure out how we do symlinks on Windows.
 #else
   #include<unistd.h>
@@ -412,7 +412,7 @@ using namespace fs;
                 , ccp( dst )
               );
             }
-            #if !e_compiling( microsoft )
+            #if !e_compiling( win64 )
               e_rm( dst );
               const auto err = symlink( src, dst );
               if( err )
@@ -455,7 +455,7 @@ using namespace fs;
                     + *it;
                     + "/"
                     + publicFolder.filename();
-                  #if !e_compiling( microsoft )
+                  #if !e_compiling( win64 )
                     const auto error = symlink(
                         srcDir
                       , symLnk );

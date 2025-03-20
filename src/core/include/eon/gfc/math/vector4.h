@@ -227,12 +227,10 @@
       //Bracket:{                                 |
 
         e_forceinline self operator[]( const u32 i )const{
-          e_assert( i < e_dimof( m ));
           return m[ i ];
         }
 
         e_forceinline self& operator[]( const u32 i ){
-          e_assert( i < e_dimof( m ));
           return m[ i ];
         }
 
@@ -274,10 +272,6 @@
         }
 
         e_forceinline Vector4& operator/=( const Vector4& V ){
-          e_assert( V.x != 0.f );
-          e_assert( V.y != 0.f );
-          e_assert( V.z != 0.f );
-          e_assert( V.w != 0.f );
           if( is_sse() ){
             #ifdef __SSE__
               v = _mm_div_ps( v, V.v );
@@ -292,7 +286,6 @@
         }
 
         e_forceinline Vector4 operator/( const self& s )const{
-          e_assert( s != 0.f );
           Vector4 r;
           if( is_sse() ){
             #ifdef __SSE__
@@ -308,7 +301,6 @@
         }
 
         e_forceinline Vector4& operator/=( const self& s ){
-          e_assert( s != 0.f );
           if( is_sse() ){
             #ifdef __SSE__
               v = _mm_div_ps( v,_mm_set1_ps( float( s )));
@@ -323,7 +315,6 @@
         }
 
         e_forceinline Vector4 operator/( const float s )const{
-          e_assert( s != 0.f );
           Vector4 r;
           if( is_sse() ){
             #ifdef __SSE__
@@ -339,7 +330,6 @@
         }
 
         e_forceinline Vector4& operator/=( const float s ){
-          e_assert( s != 0.f );
           if( is_sse() ){
             #ifdef __SSE__
               v = _mm_div_ps( v,_mm_set1_ps( s ));

@@ -20,7 +20,7 @@
         * This interface is used by the Triangle::draw method to rasterize. The
         * user implements an IRasterizer::set method which gets called for each
         * texel in the surface. The eon compiler's light mapper uses this for
-        * computing lumels at each lightmap U and V for example.
+        * computing lumels at each light map U and V for example.
         */
 
       struct E_PUBLISH IRasterizer{
@@ -30,7 +30,7 @@
         /** \brief Draw texel into surface.
           *
           * This routine is responsible for setting the color of a texel during
-          * rendering of a triangle. For the lightmapper, for example, it draws
+          * rendering of a triangle. For the light mapper, for example, it draws
           * rays into a scene and computes lighting contribution, indirect
           * lighting and ambient occlusion then adds result to the texel given.
           *
@@ -99,7 +99,6 @@
         */
 
       const Point3& operator[]( const u32 i )const{
-        e_assert( i < 3 );
         return( &A )[ i ];
       }
 
@@ -113,7 +112,6 @@
         */
 
       Point3& operator[]( const u32 i ){
-        e_assert( i < 3 );
         return( &A )[ i ];
       }
 

@@ -40,8 +40,6 @@
         */
 
       e_forceinline const self& operator()( const s32 r, const s32 c )const{
-        e_assert( r<3 );
-        e_assert( c<3 );
         return m[r][c];
       }
 
@@ -57,8 +55,6 @@
         */
 
       e_forceinline self& operator()( const s32 r, const s32 c ){
-        e_assert( r<3 );
-        e_assert( c<3 );
         return m[r][c];
       }
 
@@ -74,7 +70,6 @@
         */
 
       e_forceinline const self& operator[]( const s32 i )const{
-        e_assert( i<9 );
         return t[i];
       }
 
@@ -90,7 +85,6 @@
         */
 
       e_forceinline self& operator[]( const s32 i ){
-        e_assert( i<9 );
         return t[i];
       }
 

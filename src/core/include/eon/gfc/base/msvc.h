@@ -137,8 +137,8 @@
       //}:                                        |
       //Vendor:{                                  |
 
-        #define __compiling_microsoft__ 1
-        #define __compiling_pc__ 1
+        #define __compiling_win64__ 1
+        #define __compiling_pc__    1
 
       //}:                                        |
       //Packed:{                                  |

@@ -13,7 +13,7 @@
     #include<sys/stat.h>
     #include<unistd.h>
     #include<signal.h>
-  #elif e_compiling( microsoft )
+  #elif e_compiling( win64 )
     extern"C"{
       bool        __stdcall CreateDirectoryA( const char*, void* );
       const char* __stdcall GetCommandLineA();
@@ -51,7 +51,7 @@ using namespace gfc;
             // Finally we can enter the application entry-point.
             IEngine::main( IEngine::args );
           }
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           int __stdcall WinMain( vp, vp, ccp, int ){
             // Before we can do anything with the engine we must load the args.
             { std::stringstream ss( GetCommandLineA() );
@@ -118,7 +118,7 @@ using namespace gfc;
           }
 
           // Alter the arguments by changing path separators.
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             IEngine::args.alter( 0,
               [&]( string& arg ){
                 arg.replace( "\\", "/" );

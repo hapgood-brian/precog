@@ -608,7 +608,7 @@
     };
 
     template<> u64 e_forceinline Power::to2bsf<u64>( const u64 x ){
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         u64 ix;
         _BitScanForward64( (unsigned long*)&ix, Power::to2( x ));
         return ix;
@@ -617,7 +617,7 @@
       #endif
     }
     template<> u32 e_forceinline Power::to2bsf<u32>( const u32 x ){
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         u64 ix;
         _BitScanForward( (unsigned long*)&ix, Power::to2( x ));
         return ix;

@@ -11,7 +11,7 @@
 #include"ws.h"
 #include<regex>
 
-#if !e_compiling( microsoft )
+#if !e_compiling( win64 )
   #include<sys/utsname.h>
 #endif
 
@@ -55,7 +55,7 @@ using namespace fs;
           // Write the PBX format project inside xcodeproj package.
           //--------------------------------------------------------------------
 
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             auto* ss = _strdup( filename.path() );
           #else
             auto* ss = strdup( filename.path() );
@@ -748,7 +748,7 @@ using namespace fs;
                           fs << ".dylib: SHARED_LIB_";
                         #elif e_compiling( linux )
                           fs << ".so: SHARED_LIB_";
-                        #elif e_compiling( microsoft )
+                        #elif e_compiling( win64 )
                           fs << ".dll: SHARED_LIB_";
                         #else
                           fs << ": SHARED_LIB_";
@@ -759,7 +759,7 @@ using namespace fs;
                         fs << ".dylib: SHARED_LIB_";
                       #elif e_compiling( linux )
                         fs << ".so: SHARED_LIB_";
-                      #elif e_compiling( microsoft )
+                      #elif e_compiling( win64 )
                         fs << ".dll: SHARED_LIB_";
                       #else
                         fs << ": SHARED_LIB_";
@@ -802,7 +802,7 @@ using namespace fs;
                         fs << ".so";
                       #elif e_compiling( osx )
                         fs << ".dylib";
-                      #elif e_compiling( microsoft )
+                      #elif e_compiling( win64 )
                         fs << ".dll";
                       #else
                         e_break( "Please define a platform!" );
@@ -826,7 +826,7 @@ using namespace fs;
                         fs << ".so";
                       #elif e_compiling( osx )
                         fs << ".dylib";
-                      #elif e_compiling( microsoft )
+                      #elif e_compiling( win64 )
                         fs << ".dll";
                       #else
                         e_break( "Please define a platform!" );
@@ -946,7 +946,7 @@ using namespace fs;
                            fs << ": ELF_LINKER_" << upr;
                         #elif e_compiling( osx )
                            fs << ": MACHO_LINKER_" << upr;
-                        #elif e_compiling( microsoft )
+                        #elif e_compiling( win64 )
                            fs << ": PE_LINKER_" << upr;
                         #else
                           e_break( "Please define a platform!" );
@@ -957,7 +957,7 @@ using namespace fs;
                          fs << ": ELF_LINKER_" << upr;
                       #elif e_compiling( osx )
                          fs << ": MACHO_LINKER_" << upr;
-                      #elif e_compiling( microsoft )
+                      #elif e_compiling( win64 )
                          fs << ": PE_LINKER_" << upr;
                       #else
                         e_break( "Please define a platform!" );
@@ -1007,7 +1007,7 @@ using namespace fs;
                               ext << ".so";
                             #elif e_compiling( osx )
                               ext << ".dylib";
-                            #elif e_compiling( microsoft )
+                            #elif e_compiling( win64 )
                               ext << ".dll";
                             #else
                               e_break( "Unsupported OS target" );
@@ -1018,7 +1018,7 @@ using namespace fs;
                             ext << ".so";
                           #elif e_compiling( osx )
                             ext << ".dylib";
-                          #elif e_compiling( microsoft )
+                          #elif e_compiling( win64 )
                             ext << ".dll";
                           #else
                             e_break( "Unsupported OS target" );
@@ -1443,7 +1443,7 @@ e_msg( subdir+label );
 
   Workspace::Workspace()
       : m_tStates( bmp ){
-    #if !e_compiling( microsoft )
+    #if !e_compiling( win64 )
       struct utsname buf;
       if( !uname( &buf ))
         cpu.cat( buf.machine );

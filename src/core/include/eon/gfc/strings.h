@@ -838,7 +838,6 @@
               */
 
             template<typename T> e_forceinline T as()const{
-              e_sanity_check( !e_isbad( c_str() ));
               return as<T>( c_str() );
             }
 

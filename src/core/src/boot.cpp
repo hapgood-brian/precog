@@ -43,7 +43,7 @@ using namespace gfc;
 //================================================+=============================
 //Externs:{                                       |
 
-  #if e_compiling( microsoft )
+  #if e_compiling( win64 )
     #define WIN32_LEAN_AND_MEAN
     #define WIN32_EXTRA_LEAN
     #define VC_EXTRA_LEAN
@@ -120,7 +120,7 @@ using namespace gfc;
 
     string e_getenv( ccp pEnv ){
       string s;
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         char envvar[260];
         if( !strcmp( pEnv, "HOME" )){
           SHGetFolderPathA( NULL, 0x0028, NULL, 0, envvar );
@@ -258,7 +258,7 @@ using namespace gfc;
       //isDebugging:{                             |
 
         bool IEngine::isDebugging(){
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             return IsDebuggerPresent();
           #elif e_compiling( osx )
             //https://developer.apple.com/library/mac/qa/qa1361/_index.html
@@ -354,7 +354,7 @@ using namespace gfc;
             }
             return true;
           }
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           if( !fexists( directory )){
             if( !dexists( directory )){
               const auto& osPath = directory.os();
@@ -376,7 +376,7 @@ using namespace gfc;
         #if e_compiling( osx ) || e_compiling( linux )
           ::system( "rm -rf " + path );
           return true;
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           const auto& osPath = path.os();
           if( dexists( osPath )){
             ::system( "cmd.exe /c rd /S /Q " + osPath );
@@ -396,7 +396,7 @@ using namespace gfc;
       void IEngine::copy( const string& source, const string& target ){
         #if e_compiling( osx )
           ::system( "cp -R " + source + " " + target );
-        #elif e_compiling( microsoft )
+        #elif e_compiling( win64 )
           ::system( "copy " + source + " " + target );
         #endif
       }

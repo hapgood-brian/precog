@@ -226,7 +226,6 @@
           */
 
         e_forceinline self operator[]( const u32 i )const{
-          e_assert( i < e_dimof( t ));
           return t[ i ];
         }
 
@@ -240,7 +239,6 @@
           */
 
         e_forceinline self& operator[]( const u32 i ){
-          e_assert( i < e_dimof( t ));
           return t[ i ];
         }
 
@@ -493,7 +491,6 @@
       e_forceinline static Matrix4 getS( const self& x, const self& y, const self& z ){
         Matrix4 M;
         M.setScale( x, y, z );
-        e_assert( M.valid() );
         return M;
       }
 
@@ -509,7 +506,6 @@
       e_forceinline static Matrix4 getS( const Vector3& s ){
         Matrix4 M;
         M.setScale( s.x, s.y, s.z );
-        e_assert( M.valid() );
         return M;
       }
 
@@ -523,7 +519,6 @@
         */
 
       e_forceinline static Matrix4 getS( const self& s ){
-        e_assert( s.valid() );
         return Matrix4( s );
       }
 
@@ -776,7 +771,6 @@
       e_forceinline Matrix4 noTranslation()const{
         Matrix4 M( *this );
         M.removeTranslation();
-        e_assert( M.valid() );
         return M;
       }
 
@@ -800,7 +794,6 @@
       e_forceinline Matrix4 noscale()const{
         Matrix4 M( *this );
         M.removeScale();
-        e_assert( M.valid() );
         return M;
       }
 
@@ -823,7 +816,6 @@
       e_forceinline Matrix4 transposed()const{
         Matrix4 M( *this );
         M.transpose();
-        e_assert( M.valid() );
         return M;
       }
 
@@ -853,8 +845,6 @@
         */
 
       e_forceinline Vector4 column( const u32 i )const{
-        e_assert( valid() );
-        e_assert( i < 4, "Column does not exist" );
         return Vector4( a[0][i], a[1][i], a[2][i], a[3][i] );
       }
 
@@ -868,8 +858,6 @@
         */
 
       e_forceinline Vector4 row( const u32 i )const{
-        e_assert( valid() );
-        e_assert( i < 4, "Column does not exist" );
         return a[i];
       }
 
@@ -880,7 +868,6 @@
         */
 
       e_forceinline Vector3 forward()const{
-        e_assert( valid() );
         return column( 0 ).xyz();
       }
 
@@ -891,7 +878,6 @@
         */
 
       e_forceinline Vector3 right()const{
-        e_assert( valid() );
         return column( 1 ).xyz();
       }
 
@@ -902,7 +888,6 @@
         */
 
       e_forceinline Vector3 up()const{
-        e_assert( valid() );
         return column( 2 ).xyz();
       }
 
@@ -912,7 +897,6 @@
         */
 
       e_forceinline Point3 toPosition()const{
-        e_assert( valid() );
         return Point3( a[ 3 ]);
       }
 
@@ -960,7 +944,6 @@
         */
 
       e_forceinline void mul( const Matrix4& M ){
-        e_assert( valid() && M.valid() );
         *this *= M;
       }
 
@@ -995,7 +978,6 @@
         M( 1, 3 ) = -(top + bottom) / (top - bottom);
         M( 2, 3 ) = -(zFar + zNear) / (zFar - zNear);
         *this = M;
-        e_assert( valid() );
       }
 
       /** \brief Construct orthographic matrix.
@@ -1013,7 +995,6 @@
         ZZ = 1 / (nearZ - farZ);
         WZ = nearZ / (nearZ - farZ);
         WW = 1;
-        e_assert( valid() );
       }
 
       /** \brief Set as perspective V2C matrix.
@@ -1138,7 +1119,6 @@
         */
 
       e_forceinline self uniformScale()const{
-        e_assert( valid() );
         return Vector4( XX, YY, ZZ, WW ).length();
       }
 
@@ -1159,7 +1139,6 @@
         */
 
       e_noinline Quaternion asQuaternion()const{
-        e_assert( valid() );
         //http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
         self qw, qx, qy, qz;
         const self tr = m[0][0] + m[1][1] + m[2][2];
@@ -1205,7 +1184,6 @@
       YX = yx; YY = yy; YZ = yz; YW = yw;
       ZX = zx; ZY = zy; ZZ = zz; ZW = zw;
       WX = wx; WY = wy; WZ = wz; WW = ww;
-      e_assert( valid() );
     }
 
     e_forceinline_always Matrix4(
@@ -1231,12 +1209,10 @@
         ZX=M.ZX; ZY=M.ZY; ZZ=M.ZZ; ZW=M.ZW;
         WX=M.WX; WY=M.WY; WZ=M.WZ; WW=M.WW;
       #endif
-      e_assert( valid() );
     }
 
     e_forceinline_always Matrix4( const self& scale ){
       setScale( scale );
-      e_assert( valid() );
     }
 
     e_forceinline_always Matrix4( const Affine3& affine ){

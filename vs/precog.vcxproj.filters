@@ -30,9 +30,6 @@
     <ClCompile Include="..\src\console\precog\src\ninja.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\console\precog\src\qmake.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\console\precog\src\std.cpp">
       <Filter>src</Filter>
     </ClCompile>

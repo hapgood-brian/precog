@@ -385,7 +385,7 @@ using namespace fs;
             out << "  return'apple'\n";
           }else if( Workspace::bmp->bVS2019 ||
                     Workspace::bmp->bVS2022 ){
-            out << "  return'microsoft'\n";
+            out << "  return'win64'\n";
           }else{
             out << "  return'community'\n";
           }
@@ -404,7 +404,7 @@ using namespace fs;
           out << "is = function(name)\n";
           #if e_compiling( osx )
             out << "  return( name=='apple' )\n";
-          #elif e_compiling( microsoft )
+          #elif e_compiling( win64 )
             out << "  return( name=='win64' )\n";
           #elif e_compiling( linux )
             out << "  return( name=='linux' )\n";

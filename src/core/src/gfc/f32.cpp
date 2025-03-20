@@ -7,7 +7,7 @@
 
 #if !e_compiling( arm64 )
   #if !e_compiling( web )
-    #if e_compiling( microsoft )
+    #if e_compiling( win64 )
       #include<intrin.h>
     #else
       #include<x86intrin.h>

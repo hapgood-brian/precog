@@ -20,7 +20,6 @@
     <ClCompile Include="..\src\console\precog\src\msvc.cpp" />
     <ClCompile Include="..\src\console\precog\src\ndk.cpp" />
     <ClCompile Include="..\src\console\precog\src\ninja.cpp" />
-    <ClCompile Include="..\src\console\precog\src\qmake.cpp" />
     <ClCompile Include="..\src\console\precog\src\std.cpp" />
     <ClCompile Include="..\src\console\precog\src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

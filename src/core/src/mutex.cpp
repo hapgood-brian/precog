@@ -5,7 +5,7 @@
 // Published under the GPL3 license; see LICENSE for more information.
 //------------------------------------------------------------------------------
 
-#if e_compiling( microsoft )
+#if e_compiling( win64 )
   #define WIN32_LEAN_AND_MEAN
   #define NOMINMAX
   #include<windows.h>
@@ -22,7 +22,7 @@ using namespace gfc;
   //acquire:{                                     |
 
     bool Mutex::acquire(){
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         LPCRITICAL_SECTION pcs = reinterpret_cast<LPCRITICAL_SECTION>( m_pNative );
         EnterCriticalSection( pcs );
       #else
@@ -36,7 +36,7 @@ using namespace gfc;
   //release:{                                     |
 
     void Mutex::release(){
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         LPCRITICAL_SECTION pcs = reinterpret_cast<LPCRITICAL_SECTION>( m_pNative );
         LeaveCriticalSection( pcs );
       #else
@@ -49,7 +49,7 @@ using namespace gfc;
   //[ctor]:{                                      |
 
     Mutex::Mutex(){
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         LPCRITICAL_SECTION pcs = new CRITICAL_SECTION;
         ZeroMemory( pcs, sizeof( CRITICAL_SECTION ));
         InitializeCriticalSection( pcs );
@@ -65,7 +65,7 @@ using namespace gfc;
   //[dtor]:{                                      |
 
     Mutex::~Mutex(){
-      #if e_compiling( microsoft )
+      #if e_compiling( win64 )
         LPCRITICAL_SECTION pcs = reinterpret_cast<LPCRITICAL_SECTION>( m_pNative );
         e_assert( pcs, "Native pointer is nullptr!" );
         DeleteCriticalSection( pcs );

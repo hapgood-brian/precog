@@ -416,8 +416,6 @@
             */
 
           e_forceinline const T& cast()const{
-            e_assert( UUID, "Cannot cast an empty handle!" );
-            e_assert( isa<T>(), "UUID is not a member of class T" );
             const T& t = Class::cast<T>( UUID );
             #if e_compiling( debug )
               __me = &t;

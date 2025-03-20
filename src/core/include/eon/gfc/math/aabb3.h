@@ -230,12 +230,10 @@
         */
 
       e_forceinline const self& operator[]( const u32 i )const{
-        e_assert( i < 6 );
         return reinterpret_cast<const self*>( this )[ i ];
       }
 
       e_forceinline self& operator[]( const u32 i ){
-        e_assert( i < 6 );
         return reinterpret_cast<self*>( this )[ i ];
       }
 

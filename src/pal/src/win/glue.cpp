@@ -364,7 +364,7 @@ namespace{
           , const strings& userArgs
           , const bool bBlocking
           , const std::function<void( const s32 )>& lambda ){
-        // See also https://support.microsoft.com/en-us/kb/190351.
+        // See also https://support.win64.com/en-us/kb/190351.
         PROCESS_INFORMATION pi;
         STARTUPINFO si;
         memset( &si, 0, sizeof( si ));

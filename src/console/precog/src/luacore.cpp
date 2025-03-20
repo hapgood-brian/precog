@@ -874,11 +874,13 @@ extern s32 onSave( lua_State* L );
             //------------------------------------------------------------------
 
             static const auto& setsignal=[]( int sig, void( *handler )( int )){
-              struct sigaction sa;
-              sa.sa_handler = handler;
-              sa.sa_flags = 0;
-              sigemptyset( &sa.sa_mask );  /* do not mask any signal */
-              sigaction( sig, &sa, nullptr );
+              #if !e_compiling( win64 )
+                struct sigaction sa;
+                sa.sa_handler = handler;
+                sa.sa_flags = 0;
+                sigemptyset( &sa.sa_mask );  /* do not mask any signal */
+                sigaction( sig, &sa, nullptr );
+              #endif
             };
 
             //------------------------------------------------------------------

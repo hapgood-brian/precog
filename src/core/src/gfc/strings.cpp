@@ -10,7 +10,7 @@
 #include<stdio.h>
 #include<mutex>
 
-#if e_compiling( microsoft )
+#if e_compiling( win64 )
   #ifndef WIN32_LEAN_AND_MEAN
   #define WIN32_LEAN_AND_MEAN
   #endif
@@ -1772,7 +1772,7 @@ using namespace gfc;
       //{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
       string String::guid(){
         char text[39]{};
-        #if e_compiling( microsoft )
+        #if e_compiling( win64 )
           GUID guid;
           const HRESULT hr = CoCreateGuid( &guid );
           if( !hr ){
@@ -1863,7 +1863,7 @@ using namespace gfc;
         e_sanity_check( !e_isbad( format ));
         u64 bytes = 0;
         if( format ){
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             bytes = u64(
               vsprintf_s(
                   catvAlloc()
@@ -1930,7 +1930,7 @@ using namespace gfc;
         e_sanity_check( !e_isbad( format ));
         cp pCatvBuffer = catvAlloc();
         if( format ){
-          #if e_compiling( microsoft )
+          #if e_compiling( win64 )
             const u64 bytes = u64(
               vsprintf_s(
                   pCatvBuffer
@@ -2437,7 +2437,7 @@ using namespace gfc;
     //os:{                                        |
 
       string String::os()const{
-        #if e_compiling( microsoft )
+        #if e_compiling( win64 )
           if( !empty() ){
             string os;
             switch( *(u16*)c_str() ){

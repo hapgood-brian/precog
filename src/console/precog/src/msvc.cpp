@@ -687,7 +687,7 @@ using namespace fs;
       void Workspace::MSVC::writeFilter( Writer& fs )const{
 
         fs << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-        fs << "<Project ToolsVersion=\"4.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n";
+        fs << "<Project ToolsVersion=\"4.0\" xmlns=\"http://schemas.win64.com/developer/msbuild/2003\">\n";
 
         //----------------------------------------------------------------------
         // Base directory for filtering from. This should come from somewhere in
@@ -929,7 +929,7 @@ using namespace fs;
         //----------------------------------------------------------------------
 
         fs << "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-        fs << "<Project DefaultTargets=\"Build\" ToolsVersion=\"16.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">\n";
+        fs << "<Project DefaultTargets=\"Build\" ToolsVersion=\"16.0\" xmlns=\"http://schemas.win64.com/developer/msbuild/2003\">\n";
         writePropGroup( fs, "<arch>" );
         writeItemGroup( fs, "ProjectConfigurations" );
         writeItemGroup( fs, "<source>" );
