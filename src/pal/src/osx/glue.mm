@@ -405,6 +405,13 @@ using OnOK             = std::function<void()>;
               , const bool )>& lambda ){
           if( cPath.empty() )
             return false;
+          if( e_fexists( cPath )){
+            lambda(
+                cPath.path()
+              , cPath.filename()
+              , false
+            );
+          }
           string path = cPath;
           if( '/' != *path.right( 1 ))
             path += '/';
