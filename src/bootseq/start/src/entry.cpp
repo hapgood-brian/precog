@@ -119,20 +119,12 @@ using namespace gfc;
 
           // Alter the arguments by changing path separators.
           #if e_compiling( microsoft )
-            IEngine::args.alter( 0, [&]( string& arg ){ arg.replace( "\\", "/" ); });
-          #endif
-
-          // Get the package path; can't do anything if it's null.
-          if( !e_getCvar( bool, "COMPILE_EDITOR_PACKAGE" )){
-            const auto& streamPath = IEngine::toStreamPath();
-            if( !streamPath.empty() ){
-              // Load all fablets and store locally for lifetime of program.
-              IEngine::fablets = Prefab::get( streamPath );
-              if( !IEngine::fablets.empty() ){
-                e_msgf( "Prefabs loaded." );
+            IEngine::args.alter( 0,
+              [&]( string& arg ){
+                arg.replace( "\\", "/" );
               }
-            }
-          }
+            );
+          #endif
 
           // Run the game.
           return IEngine::main( IEngine::args );

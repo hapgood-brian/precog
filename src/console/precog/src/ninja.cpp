@@ -135,14 +135,14 @@ using namespace fs;
         // <arch>
         //----------------------------------------------------------------------
 
-        if( crossCompileTriple.find( "x86_64" )){
+        if( crossCc.find( "x86_64" )){
           cxx << "x86_64";
-        }else if(( crossCompileTriple.find( "i386" ))||
-                   crossCompileTriple.find( "x86" )){
+        }else if(( crossCc.find( "i386" ))||
+                   crossCc.find( "x86" )){
           cxx << "i386";
-        }else if( crossCompileTriple.find( "mips" )){
+        }else if( crossCc.find( "mips" )){
           cxx << "mips";
-        }else if( crossCompileTriple.find( "arm" )){
+        }else if( crossCc.find( "arm" )){
           cxx << "arm";
         }else{
           if( cpu.hash() == "x86_64"_64 ){
@@ -156,13 +156,13 @@ using namespace fs;
         // <sub>
         //----------------------------------------------------------------------
 
-        if( crossCompileTriple.find( "arm" )){
+        if( crossCc.find( "arm" )){
           const ccp subs[]{
             "64", "v4t", "v5t", "v5te", "v6", "v6m", "v6t2", "v7a", "v7m",
           };
           const auto n = e_dimof( subs );
           for( auto i=0u; i<n; ++i ){
-            if( !crossCompileTriple.find( subs[ i ]))
+            if( !crossCc.find( subs[ i ]))
               continue;
             cxx << subs[ i ];
             break;
@@ -173,11 +173,11 @@ using namespace fs;
         // <vendor>
         //----------------------------------------------------------------------
 
-        if( crossCompileTriple.find( "apple" )){
+        if( crossCc.find( "apple" )){
           cxx << "-apple";
-        }else if( crossCompileTriple.find( "nvidia" )){
+        }else if( crossCc.find( "nvidia" )){
           cxx << "-nvidia";
-        }else if( crossCompileTriple.find( "pc" )){
+        }else if( crossCc.find( "pc" )){
           cxx << "-pc";
         }
 
@@ -185,17 +185,17 @@ using namespace fs;
         // <sys>
         //----------------------------------------------------------------------
 
-        if( crossCompileTriple.find( "none" )){
+        if( crossCc.find( "none" )){
           cxx << "-none";
-        }else if( crossCompileTriple.find( "freebsd" )){
+        }else if( crossCc.find( "freebsd" )){
           cxx << "-freebsd";
-        }else if( crossCompileTriple.find( "win32" )){
+        }else if( crossCc.find( "win32" )){
           cxx << "-win32";
-        }else if( crossCompileTriple.find( "darwin" )){
+        }else if( crossCc.find( "darwin" )){
           cxx << "-darwin";
-        }else if( crossCompileTriple.find( "cuda" )){
+        }else if( crossCc.find( "cuda" )){
           cxx << "-cuda";
-        }else if( crossCompileTriple.find( "linux" )){
+        }else if( crossCc.find( "linux" )){
           cxx << "-linux";
         }
 
@@ -203,15 +203,15 @@ using namespace fs;
         // <env>
         //----------------------------------------------------------------------
 
-        if( crossCompileTriple.find( "eabi" )){
+        if( crossCc.find( "eabi" )){
           cxx << "-eabi";
-        }else if( crossCompileTriple.find( "gnu" )){
+        }else if( crossCc.find( "gnu" )){
           cxx << "-gnu";
-        }else if( crossCompileTriple.find( "android" )){
+        }else if( crossCc.find( "android" )){
           cxx << "-android";
-        }else if( crossCompileTriple.find( "macho" )){
+        }else if( crossCc.find( "macho" )){
           cxx << "-macho";
-        }else if( crossCompileTriple.find( "elf" )){
+        }else if( crossCc.find( "elf" )){
           cxx << "-elf";
         }
       }
@@ -234,15 +234,15 @@ using namespace fs;
         }else if( bmp->bExtPE ){
           cxx << "rule PE_LINKER_" << toLabel().toupper() + "\n";
         }else if( bmp->bCrossCompile ){
-          if( crossCompileTriple.find( "linux" )){
+          if( crossCc.find( "linux" )){
             cxx << "rule ELF_LINKER_" << toLabel().toupper() + "\n";
             return;
           }
-          if( crossCompileTriple.find( "apple" )){
+          if( crossCc.find( "apple" )){
             cxx << "rule MACHO_LINKER_" << toLabel().toupper() + "\n";
             return;
           }
-          if( crossCompileTriple.find( "pc" )){
+          if( crossCc.find( "pc" )){
             cxx << "rule PE_LINKER_" << toLabel().toupper() + "\n";
             return;
           }
@@ -531,11 +531,11 @@ using namespace fs;
               fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
             }else{
               if( bmp->bCrossCompile ){
-                if( crossCompileTriple.find( "linux" )){
+                if( crossCc.find( "linux" )){
                   fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
-                }else if( crossCompileTriple.find( "apple" )){
+                }else if( crossCc.find( "apple" )){
                   fs << "rule SHARED_LIB_" << toLabel().toupper() + "\n";
-                }else if( crossCompileTriple.find( "pc" )){
+                }else if( crossCc.find( "pc" )){
                   fs << "rule SHARED_DLL_" << toLabel().toupper() + "\n";
                 }else{
                   #if e_compiling( linux )
@@ -604,11 +604,11 @@ using namespace fs;
             }else{
               fs << " $in -o $TARGET_FILE $LINK_LIBRARIES && $POST_BUILD\n";
               if( bmp->bCrossCompile ){
-                if( crossCompileTriple.find( "linux" )){
+                if( crossCc.find( "linux" )){
                   fs << "  description = Compiling ELF binary $out\n";
-                }else if( crossCompileTriple.find( "apple" )){
+                }else if( crossCc.find( "apple" )){
                   fs << "  description = Compiling MACHO binary $out\n";
-                }else if( crossCompileTriple.find( "pc" )){
+                }else if( crossCc.find( "pc" )){
                   fs << "  description = Compiling PE binary $out\n";
                 }else{
                   #if e_compiling( linux )

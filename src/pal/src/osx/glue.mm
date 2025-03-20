@@ -27,6 +27,8 @@ using OnOK             = std::function<void()>;
 #define USE_OPENGL 0
 #define USE_METAL2 1
 
+#define var auto
+
 //================================================+=============================
 //Glue data:{                                     |
   //Structs:{                                     |
@@ -399,30 +401,31 @@ using OnOK             = std::function<void()>;
 
         bool IEngine::dir( const string& cPath
             , const std::function<bool( const string&
-            , const string&
-            , const bool )>& lambda ){
+              , const string&
+              , const bool )>& lambda ){
           if( cPath.empty() )
             return false;
           string path = cPath;
           if( '/' != *path.right( 1 ))
             path += '/';
-          DIR* D = opendir( path.os() );
+          auto D = opendir( path.os() );
           if( !D )
             return false;
-          dirent* ent;
+          dirent* ent = nullptr;
           while(( ent = readdir( D )) != nullptr ){
-            const auto& subpath = path + ent->d_name;
-            auto* tmp = opendir( subpath );
-            if( tmp ){
-              if(( *ent->d_name != '.' )&&( *ent->d_name != '_' )){
-                if( !lambda( path, ent->d_name, true ))
-                  break;
-                dir( subpath, lambda );
-              }
-              closedir( tmp );
-            }else{
-              lambda( path, ent->d_name, false );
+            const auto& subname = string( ent->d_name );
+            if( *subname=='.' )
+              continue;
+            const auto& subpath=( path + ent->d_name );
+            if( e_dexists( subpath )){
+              if( !lambda( path, ent->d_name, true ))
+                break;
+              dir( subpath, lambda );
+              break;
             }
+            if( lambda( path, ent->d_name, false ))
+              continue;
+            break;
           }
           closedir( D );
           return true;

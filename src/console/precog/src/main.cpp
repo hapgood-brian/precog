@@ -763,13 +763,13 @@ using namespace fs;
                 //--------------------------------------------------------------
 
                 if( it->tolower().left( 8 ).hash() == "--cross="_64 ){
-                  Workspace::crossCompileTriple = it->ltrimmed( 8 );
+                  Workspace::crossCc = it->ltrimmed( 8 );
                   Workspace::bmp->bCrossCompile = 1;
                   continue;
                 }
 
                 if( it->left( 2 ).hash() == "-x"_64 ){
-                  Workspace::crossCompileTriple = it->ltrimmed( 2 );
+                  Workspace::crossCc = it->ltrimmed( 2 );
                   Workspace::bmp->bCrossCompile = 1;
                   continue;
                 }

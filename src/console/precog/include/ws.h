@@ -842,12 +842,11 @@
           * here because it's too early and WILL lockup the tool.
           */
 
-        static hashmap<u64,Element>* map;
-        static Workspace*            wsp; //!< Static workspace wasp.
-        static string                gen; //!< Generation identifier.
-        static string                out; //!< Output directory.
-        static States                bmp; //!< Global flags.
-        static string crossCompileTriple; //!< X compiling.
+        static Workspace* wsp; //!< Static workspace wasp.
+        static string     gen; //!< Generation identifier.
+        static string     out; //!< Output directory.
+        static States     bmp; //!< Global flags.
+        static string crossCc; //!< X compiling.
         static string cpu;
       };
     }

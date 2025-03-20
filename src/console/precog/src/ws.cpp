@@ -22,10 +22,9 @@ using namespace fs;
 //================================================+=============================
 //Statics:{                                       |
 
-  hashmap<u64,Workspace::Element>* Workspace::map = nullptr;
-  string      Workspace::crossCompileTriple;
   Workspace*  Workspace::wsp = nullptr;
   string      Workspace::out = "tmp/";
+  string      Workspace::crossCc;
   string      Workspace::cpu;
 
 //}:                                              |
@@ -737,11 +736,11 @@ using namespace fs;
                     fs << "build .output/lib"
                        << lbl;
                     if( bmp->bCrossCompile ){
-                      if( crossCompileTriple.find( "linux" )){
+                      if( crossCc.find( "linux" )){
                         fs << ".so: SHARED_LIB_";
-                      }else if( crossCompileTriple.find( "pc" )){
+                      }else if( crossCc.find( "pc" )){
                         fs << ".dll: SHARED_LIB_";
-                      }else if( crossCompileTriple.find( "apple" )){
+                      }else if( crossCc.find( "apple" )){
                         fs << ".dylib: SHARED_LIB_";
                       }else{
                         e_msg( "Bad cross-compiler triple: using this platform." );
@@ -791,9 +790,9 @@ using namespace fs;
                        << "\n  TARGET_FILE = .output/lib"
                        << lbl;
                     if( bmp->bCrossCompile ){
-                      if( crossCompileTriple.find( "linux" )){
+                      if( crossCc.find( "linux" )){
                         fs << ".so";
-                      }else if( crossCompileTriple.find( "pc" )){
+                      }else if( crossCc.find( "pc" )){
                         fs << ".dll";
                       }else{
                         fs << ".dylib";
@@ -815,9 +814,9 @@ using namespace fs;
                        << "default .output/lib"
                        << lbl;
                     if( bmp->bCrossCompile ){
-                      if( crossCompileTriple.find( "linux" )){
+                      if( crossCc.find( "linux" )){
                         fs << ".so";
-                      }else if( crossCompileTriple.find( "pc" )){
+                      }else if( crossCc.find( "pc" )){
                         fs << ".dll";
                       }else{
                         fs << ".dylib";
@@ -936,11 +935,11 @@ using namespace fs;
                     if( bmp->bWasm ){
                        fs << ": WASM_LINKER_" << upr;
                     }else if( bmp->bCrossCompile ){
-                      if( crossCompileTriple.find( "linux" ))
+                      if( crossCc.find( "linux" ))
                          fs << ": ELF_LINKER_" << upr;
-                      else if( crossCompileTriple.find( "pc" ))
+                      else if( crossCc.find( "pc" ))
                          fs << ": PE_LINKER_" << upr;
-                      else if( crossCompileTriple.find( "apple" ))
+                      else if( crossCc.find( "apple" ))
                          fs << ": MACHO_LINKER_" << upr;
                       else{
                         #if e_compiling( linux )
@@ -997,11 +996,11 @@ using namespace fs;
                       [&]( const string& lib ){
                         string ext;
                         if( bmp->bCrossCompile ){
-                          if( crossCompileTriple.find( "linux" )){
+                          if( crossCc.find( "linux" )){
                             ext << ".so";
-                          }else if( crossCompileTriple.find( "pc" )){
+                          }else if( crossCc.find( "pc" )){
                             ext << ".dll";
-                          }else if( crossCompileTriple.find( "apple" )){
+                          }else if( crossCc.find( "apple" )){
                             ext << ".dylib";
                           }else{
                             #if e_compiling( linux )
@@ -1423,6 +1422,7 @@ using namespace fs;
            , const auto& label
            , const bool isDir ){
           if( !isDir ){
+e_msg( subdir+label );
             const auto& cpPair = std::make_shared<std::pair<string,File>>( std::make_pair( label, File( subdir+label )));
             ret.set( label.os().tolower().hash(), cpPair );
           }
@@ -1443,8 +1443,6 @@ using namespace fs;
 
   Workspace::Workspace()
       : m_tStates( bmp ){
-    map = new hashmap<u64,Workspace::Element>(
-        Workspace::dir( "lib/" ));
     #if !e_compiling( microsoft )
       struct utsname buf;
       if( !uname( &buf ))
@@ -1466,8 +1464,6 @@ using namespace fs;
 
   Workspace::~Workspace(){
     wsp = nullptr;
-    delete map;
-    map = NULL;
   }
 
 //}:                                              |
