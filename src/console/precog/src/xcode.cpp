@@ -679,37 +679,44 @@ using namespace fs;
               if( !inSources( Type::kPlatform ).empty() )
                    inSources( Type::kPlatform ).foreach(
                 [&]( const auto& f ){
-                  auto fb = f.base();
-                  auto ok = false;
-                  Class::foreachs<Xcode>(
-                    [&]( const auto& x ){
-                      auto fl( f );
-                      fl.erase( "lib" );
-                      fl.erase( ".framework" );
-                      fl.erase( ".bundle" );
-                      fl.erase( ".dylib" );
-                      fl.erase( ".a" );
-                      if( !x.isLabel( fl ))
-                        return true;
-                      e_msgf(// Display what we're going to link with.
-                          "  Link With %s"
-                        , ccp( fl ));
-                      ok = true;
-                      return!ok;
-                    }
-                  );
-                  if( !ok )
-                    return;
-                  const auto fbr = f.right( sizeof".bundle"-1 );
-                  const auto fdr = f.right( sizeof".dylib"-1 );
-                  if((( fbr.hash() == ".bundle"_64 )||
-                      ( fdr.hash() ==  ".dylib"_64 )))
-                    return;
+                  #if 0
+                    auto fb = f.base();
+                    auto ok = false;
+                    Class::foreachs<Xcode>(
+                      [&]( const auto& x ){
+                        auto fl( f );
+                        fl.erase( "lib" );
+                        fl.erase( f.ext() );
+                        if( !x.isLabel( fl ))
+                          return true;
+                        e_msgf(// Display what we're going to link with.
+                            "  Link With %s"
+                          , ccp( fl ));
+                        ok = true;
+                        return!ok;
+                      }
+                    );
+                    if( !ok )
+                      return;
+                    // Filters quickly disallows output binaries.
+                    const auto frw = f.right( sizeof".framework"-1 );
+                    const auto fbr = f.right( sizeof".bundle"-1 );
+                    const auto fdr = f.right( sizeof".dylib"-1 );
+                    if((( fbr.hash() == ".framework"_64 )||
+                        ( fdr.hash() ==    ".bundle"_64 )||
+                        ( fdr.hash() ==     ".dylib"_64 )))
+                      return;
+                  #endif
                   collection.push( f );
                 }
               );
-              if( !toLibFiles().empty() )
-                toLibFiles().foreach( [&]( const auto& fi ){ collection.push( fi ); });
+              if( !toLibFiles().empty() ){
+                toLibFiles().foreach(
+                  [&]( const auto& fi ){
+                    collection.push( fi );
+                  }
+                );
+              }
               collection.foreach(
                 [&]( const auto& _f ){
                   const auto& ext = _f.ext().tolower();
@@ -724,9 +731,8 @@ using namespace fs;
                 }
               );
               fs << string( "      );\n" )
-                + "      runOnlyForDeploymentPostprocessing = 0;\n"
-                + "    };\n"
-              ;
+                 << "      runOnlyForDeploymentPostprocessing = 0;\n"
+                 << "    };\n";
             }
           );
           fs << "    /* End PBXFrameworksBuildPhase section */\n";
@@ -2331,13 +2337,13 @@ using namespace fs;
                   (( Xcode* )this )->inSources( Type::kPlatform ).push( f );
                   out << "    " << f.toBuildID();
                   if( Workspace::bmp->bVerbose )
-                       out << " /* [LinkWith] ";
+                       out << " /* [BuildID] ";
                   else out << " /* ";
                   out << f.filename()
                       << ".framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "
-                      << e_forceref( f );// Force don't just trap Hapgood.
+                      << f.toFileID();// Force don't just trap Hapgood.
                   if( Workspace::bmp->bVerbose )
-                       out << " /* [forceref] ";
+                       out << " /* [FileID] ";
                   else out << " /* ";
                   out << f.filename();
                   out << " */; };\n";
