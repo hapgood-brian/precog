@@ -5,6 +5,7 @@ ninja.arm64/.intermediate
 ninja.arm64/.output
 vs/.intermediate
 vs/.output
+vs/.idea
 vs/.vs
 *.o
 xc/DerivedData/
