@@ -124,7 +124,7 @@
         */
 
       e_forceinline void setPlane( const s32 i, const Plane& p ){
-        e_assert(  i < e_dimof( m_aPlanes ));
+        e_assert(  i < e_sizeof( m_aPlanes ));
         m_aPlanes[ i ] = p;
       }
 
@@ -138,7 +138,7 @@
         */
 
       e_forceinline Plane& toPlane( const s32 i ){
-        e_assert( i < e_dimof( m_aPlanes ));
+        e_assert( i < e_sizeof( m_aPlanes ));
         return m_aPlanes[ i ];
       }
 

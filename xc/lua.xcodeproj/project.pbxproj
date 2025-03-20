@@ -21,7 +21,6 @@
 		817406942CF420BD0005CAF7 /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 817406732CF420BD0005CAF7 /* lzio.c */; };
 		817406952CF420BD0005CAF7 /* lstring.c in Sources */ = {isa = PBXBuildFile; fileRef = 817406742CF420BD0005CAF7 /* lstring.c */; };
 		817406962CF420BD0005CAF7 /* lundump.c in Sources */ = {isa = PBXBuildFile; fileRef = 817406752CF420BD0005CAF7 /* lundump.c */; };
-		817406972CF420BD0005CAF7 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 817406762CF420BD0005CAF7 /* Makefile */; };
 		817406982CF420BD0005CAF7 /* ltable.c in Sources */ = {isa = PBXBuildFile; fileRef = 817406772CF420BD0005CAF7 /* ltable.c */; };
 		817406992CF420BD0005CAF7 /* lmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 817406782CF420BD0005CAF7 /* lmem.c */; };
 		8174069A2CF420BD0005CAF7 /* loadlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 817406792CF420BD0005CAF7 /* loadlib.c */; };
@@ -57,7 +56,6 @@
 		817406732CF420BD0005CAF7 /* lzio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lzio.c; path = ../src/lua/5.4.4/src/lzio.c; sourceTree = "<group>"; };
 		817406742CF420BD0005CAF7 /* lstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lstring.c; path = ../src/lua/5.4.4/src/lstring.c; sourceTree = "<group>"; };
 		817406752CF420BD0005CAF7 /* lundump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lundump.c; path = ../src/lua/5.4.4/src/lundump.c; sourceTree = "<group>"; };
-		817406762CF420BD0005CAF7 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../src/lua/5.4.4/src/Makefile; sourceTree = "<group>"; };
 		817406772CF420BD0005CAF7 /* ltable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ltable.c; path = ../src/lua/5.4.4/src/ltable.c; sourceTree = "<group>"; };
 		817406782CF420BD0005CAF7 /* lmem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lmem.c; path = ../src/lua/5.4.4/src/lmem.c; sourceTree = "<group>"; };
 		817406792CF420BD0005CAF7 /* loadlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = loadlib.c; path = ../src/lua/5.4.4/src/loadlib.c; sourceTree = "<group>"; };
@@ -125,7 +123,6 @@
 				8174066B2CF420BC0005CAF7 /* lutf8lib.c */,
 				817406842CF420BD0005CAF7 /* lvm.c */,
 				817406732CF420BD0005CAF7 /* lzio.c */,
-				817406762CF420BD0005CAF7 /* Makefile */,
 			);
 			name = src;
 			sourceTree = "<group>";
@@ -233,7 +230,6 @@
 			files = (
 				817406A62CF420BD0005CAF7 /* llex.c in Sources */,
 				817406A12CF420BD0005CAF7 /* lctype.c in Sources */,
-				817406972CF420BD0005CAF7 /* Makefile in Sources */,
 				8174069F2CF420BD0005CAF7 /* ldblib.c in Sources */,
 				817406912CF420BD0005CAF7 /* lfunc.c in Sources */,
 				817406A72CF420BD0005CAF7 /* lopcodes.c in Sources */,

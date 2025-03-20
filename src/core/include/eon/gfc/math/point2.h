@@ -23,12 +23,12 @@
       //[parenthesis]:{                           |
 
         e_forceinline self operator()( const u32 i )const{
-          e_assert( i < e_dimof( a ));
+          e_assert( i < e_sizeof( a ));
           return a[ i ];
         }
 
         e_forceinline self& operator()( const u32 i ){
-          e_assert( i < e_dimof( a ));
+          e_assert( i < e_sizeof( a ));
           return a[ i ];
         }
 
@@ -73,12 +73,12 @@
       //[bracket]:{                               |
 
         e_forceinline self operator[]( const u32 i )const{
-          e_assert( i < e_dimof( a ));
+          e_assert( i < e_sizeof( a ));
           return a[ i ];
         }
 
         e_forceinline self& operator[]( const u32 i ){
-          e_assert( i < e_dimof( a ));
+          e_assert( i < e_sizeof( a ));
           return a[ i ];
         }
 

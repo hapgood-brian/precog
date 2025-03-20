@@ -98,7 +98,7 @@ using namespace fs;
         //----------------------------------------------------------------------
 
         if( "TargetExt"_64 == group.hash() ){
-          for( u32 n=e_dimof( a_aConfigs ), i=0; i<n; ++i ){
+          for( u32 n=e_sizeof( a_aConfigs ), i=0; i<n; ++i ){
             fs << "<PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='"
               + string( a_aConfigs[ i ])
               + "|"
@@ -935,7 +935,7 @@ using namespace fs;
         writeItemGroup( fs, "<source>" );
         writePropGroup( fs, "Globals" );
         writeImport(    fs, "Project", "Microsoft.Cpp.Default.props" );
-        for( u32 n=e_dimof( a_aConfigs ), i=0; i<n; ++i ){
+        for( u32 n=e_sizeof( a_aConfigs ), i=0; i<n; ++i ){
           writePropGroup( fs, "Condition", a_aConfigs[ i ]);
         }
         writeImport(      fs, "Project", "Microsoft.Cpp.props" );
@@ -944,7 +944,7 @@ using namespace fs;
         writePropGroup(   fs, "UserMacros" );
         fs << "<PropertyGroup>\n";
           writeProjVersion(  fs );
-          for( u32 n=e_dimof( a_aConfigs ), i=0; i<n; ++i ){
+          for( u32 n=e_sizeof( a_aConfigs ), i=0; i<n; ++i ){
             writeSetDirectory( fs, "OutDir",      a_aConfigs[ i ], m_sOutDir );
             writeSetDirectory( fs, "IntDir",      a_aConfigs[ i ], m_sIntDir );
             writeTargetVar(    fs, "Name",        a_aConfigs[ i ]);

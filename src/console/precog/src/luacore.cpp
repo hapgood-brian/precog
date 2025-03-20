@@ -445,7 +445,7 @@ extern s32 onSave( lua_State* L );
             /* terminate */
             {0,0}
           };
-          lua_createtable( L, e_dimof( regSandbox ), 0 );
+          lua_createtable( L, e_sizeof( regSandbox ), 0 );
           luaL_newlib( L, regSandbox );
           lua_pushvalue( L, -1 );
           lua_setglobal( L, "__sandbox" );

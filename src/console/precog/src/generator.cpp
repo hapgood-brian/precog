@@ -38,41 +38,44 @@ using namespace fs;
             m_pProject->toResPath(),
             m_pProject->toSrcPath(),
           };
-          for( u32 i=0; i<e_dimof( paths ); ++i ){
+          for( u32 i=0; i<e_sizeof( paths ); ++i ){
             if( !paths[ i ].empty() ){
               const auto& innerPaths = paths[ i ].splitAtCommas();
               innerPaths.foreach(
                 [&]( const string& innerPath ){
-                  if( IEngine::dexists( innerPath )){
-                    IEngine::dir( innerPath,
-                      [this]( const string& d
-                            , const string& f
-                            , const bool isDirectory ){
-                        if( f.hash()==".DS_Store"_64 )
-                          return true;
-                        if( isDirectory ){
-                          const auto& d_ext = f.ext().tolower();
-                          if( !d_ext.empty() ){
-                            switch( d_ext.hash() ){
-                              case".xcassets"_64:
-                                break;
-                              default:/**/{
-                                // NB: If the extension is non-empty then we
-                                // must return. Otherwise we'll recurse thru
-                                // Lelu-XD packages and other Mac related
-                                // bundles picking up way too many images.
-                                return true;
-                              }
-                            }
-                          }
-                        }
+                  IEngine::dir( innerPath,
+                    [this]( const string& d
+                          , const string& f
+                          , const bool isDirectory ){
+                      if( !isDirectory ){
                         m_pProject->sortingHat( d + f );
+                        #if !e_compiling( golden )
+                          static auto isSpew = e_getCvar( bool, "SPEW" );
+                          if( isSpew ){
+                            e_msgf(
+                              "  File \"%s\" (%s)"
+                              , ccp( f )
+                              , ccp( d )
+                            );
+                          }
+                        #endif
                         return true;
                       }
-                    );
-                  }else{
-                    m_pProject->sortingHat( innerPath );
-                  }
+                      const auto& d_ext = f.ext().tolower();
+                      if( !d_ext.empty() ){
+                        switch( d_ext.hash() ){
+                          case".xcassets"_64:
+                            break;
+                          default:/**/{
+                            // NB: If the extension is non-empty then we
+                            // must return.
+                            break;
+                          }
+                        }
+                      }
+                      return true;
+                    }
+                  );
                   return true;
                 }
               );

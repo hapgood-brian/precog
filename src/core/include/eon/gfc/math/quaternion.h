@@ -946,13 +946,13 @@
 
       e_forceinline self tuple( const s32 i )const{
         e_assert( valid(), "Invalid rotation!" );
-        e_assert( i < e_dimof( a ));
+        e_assert( i < e_sizeof( a ));
         return a[ i ];
       }
 
       e_forceinline self& tuple( const s32 i ){
         e_assert( valid(), "Invalid rotation!" );
-        e_assert( i < e_dimof( a ));
+        e_assert( i < e_sizeof( a ));
         return a[ i ];
       }
 

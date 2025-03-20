@@ -266,7 +266,7 @@
         * This routine simply returns the number of element slots in an array.
         */
 
-      template<typename T,EON::u32 N> constexpr EON::u32 e_dimof( const EON::gfc::array<T,N>& array )noexcept{
+      template<typename T,EON::u32 N> constexpr EON::u32 e_sizeof( const EON::gfc::array<T,N>& array )noexcept{
         return array.size();
       }
 
@@ -275,7 +275,7 @@
         * This routine simply returns the number of element slots in an array.
         */
 
-      template<typename T,std::size_t N> constexpr EON::u32 e_dimof( T const (&)[ N ])noexcept{
+      template<typename T,std::size_t N> constexpr EON::u32 e_sizeof( T const (&)[ N ])noexcept{
         return EON::u32( N );
       }
 

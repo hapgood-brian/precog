@@ -408,9 +408,19 @@ using OnOK             = std::function<void()>;
           string path = cPath;
           if( '/' != *path.right( 1 ))
             path += '/';
+          #if !e_compiling( golden )
+            static auto sDepth = -1; ++sDepth;
+            static auto isSpew = e_getCvar( bool, "SPEW" );
+            if( isSpew )
+              e_msgf( ">>> Path \"%s\" (%d)", ccp( path ), sDepth );
+          #endif
           auto D = opendir( path.os() );
-          if( !D )
+          if( !D ){
+            #if !e_compiling( golden )
+              --sDepth;
+            #endif
             return false;
+          }
           dirent* ent = nullptr;
           while(( ent = readdir( D )) != nullptr ){
             const auto& subname = string( ent->d_name );
@@ -421,13 +431,16 @@ using OnOK             = std::function<void()>;
               if( !lambda( path, ent->d_name, true ))
                 break;
               dir( subpath, lambda );
-              break;
+              continue;
             }
             if( lambda( path, ent->d_name, false ))
               continue;
             break;
           }
           closedir( D );
+          #if !e_compiling( golden )
+            --sDepth;
+          #endif
           return true;
         }
 
@@ -449,9 +462,8 @@ using OnOK             = std::function<void()>;
     //isMainThread:{                              |
 
       bool IEngine::isMainThread(){
-        if( [NSThread isMainThread]==YES ){
+        if([ NSThread isMainThread ]==YES )
           return true;
-        }
         return false;
       }
 

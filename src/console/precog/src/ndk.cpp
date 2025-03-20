@@ -406,8 +406,8 @@ using namespace fs;
               + path
               + "/"
               + it->filename();
-            if( e_getCvar( bool, "VERBOSE_LOGGING" )){
-              e_msgf( "symlink: \"%s\" -> \"%s\""
+            if( e_getCvar( bool, "SPEW" )){
+              e_msgf( "  Symlink: \"%s\" -> \"%s\""
                 , ccp( src )
                 , ccp( dst )
               );

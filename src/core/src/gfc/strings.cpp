@@ -964,7 +964,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -997,7 +997,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1026,7 +1026,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1055,7 +1055,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1115,7 +1115,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1144,7 +1144,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1173,7 +1173,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1202,7 +1202,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1243,7 +1243,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1272,7 +1272,7 @@ using namespace gfc;
               if( pString ){
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){
@@ -1314,7 +1314,7 @@ using namespace gfc;
                 float f[7]={ 0,0,0,0,0,0,0 };
                 cp s = cp( pString );
                 cp E = s+strlen( s );
-                for( u32 i=0; i<e_dimof( f ); ++i ){
+                for( u32 i=0; i<e_sizeof( f ); ++i ){
                   s = String::skip_anyws( s );
                   cp e = strchr( s, ',' );
                   if( !e ){

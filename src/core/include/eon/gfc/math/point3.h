@@ -150,7 +150,7 @@
         */
 
       e_forceinline self operator[]( const u32 i )const{
-        e_assert( i < e_dimof( a ));
+        e_assert( i < e_sizeof( a ));
         e_assert( valid() );
         return a[ i ];
       }
@@ -165,7 +165,7 @@
         */
 
       e_forceinline self& operator[]( const u32 i ){
-        e_assert( i < e_dimof( a ));
+        e_assert( i < e_sizeof( a ));
         e_assert( valid() );
         return a[ i ];
       }

@@ -160,7 +160,7 @@ using namespace fs;
           const ccp subs[]{
             "64", "v4t", "v5t", "v5te", "v6", "v6m", "v6t2", "v7a", "v7m",
           };
-          const auto n = e_dimof( subs );
+          const auto n = e_sizeof( subs );
           for( auto i=0u; i<n; ++i ){
             if( !crossCc.find( subs[ i ]))
               continue;

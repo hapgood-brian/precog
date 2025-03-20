@@ -279,7 +279,7 @@
             */
 
           e_forceinline bool empty()const{
-            for( u32 i=0; i<e_dimof( m_aBuckets ); ++i ){
+            for( u32 i=0; i<e_sizeof( m_aBuckets ); ++i ){
               if( m_aBuckets[ i ]){
                 return false;
               }

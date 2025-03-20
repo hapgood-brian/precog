@@ -127,13 +127,13 @@ using namespace gfc;
           s = envvar;
           s.replace( "\\", "/" );
         }else if( !strcmp( pEnv, "PWD" )){
-          u32 dwResult = GetCurrentDirectoryA( e_dimof( envvar ), envvar );
+          u32 dwResult = GetCurrentDirectoryA( e_sizeof( envvar ), envvar );
           e_assert( dwResult );
           s = envvar;
           s.replace( "\\", "/" );
         }else{
           size_t size;
-          switch( getenv_s( &size, envvar, e_dimof( envvar ), pEnv )){
+          switch( getenv_s( &size, envvar, e_sizeof( envvar ), pEnv )){
             case ERANGE:/**/{
               char* pEnvVar = new char[ size ];
               size_t size = 0;
@@ -274,7 +274,7 @@ using namespace gfc;
                 getpid(),
               };
               size_t size = sizeof( info );
-              sysctl( mib, e_dimof( mib ), &info, &size, nullptr, 0 );
+              sysctl( mib, e_sizeof( mib ), &info, &size, nullptr, 0 );
               bDebugging=( 0!=( info.kp_proc.p_flag & P_TRACED ));
               bGate = true;
             }

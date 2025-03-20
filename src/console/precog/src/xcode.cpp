@@ -70,7 +70,7 @@ using namespace fs;
 #endif
 
       void Workspace::Xcode::setup()const{
-        for( auto n=e_dimof( super::toSources() ), i=0u; i<n; ++i ){
+        for( auto n=e_sizeof( super::toSources() ), i=0u; i<n; ++i ){
           const auto& list = super::inSources( i );
           auto it = list.getIterator();
           while( it ){
@@ -1486,8 +1486,7 @@ using namespace fs;
                     }
                   }
                   if( it->hash() == "macos"_64 ){
-                    static const auto isVerbose =
-                        e_getCvar( bool, "VERBOSE_LOGGING" );
+                    static const auto isVerbose = e_getCvar( bool, "SPEW" );
                     if( isVerbose ){
                       e_msgf( "  Links \"%s\" (%s)",
                           ccp( f )

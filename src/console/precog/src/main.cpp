@@ -919,7 +919,6 @@ using namespace fs;
                   e_msg( "      when \"wasm\"       /" );
                   e_msg( "    Cvars:" );
                   e_msg( "      --cvar=ENABLE_PTHREADS" );
-                  e_msg( "      --cvar=VERBOSE_LOGGING" );
                   e_msg( "      --cvar=SPEW" );
                   #if e_compiling( experimental )
                     // TODO: Add a bunch of functionality for packing (Writer::pack() )
