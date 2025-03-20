@@ -753,7 +753,7 @@ extern s32 onSave( lua_State* L );
                 ccp& p
               , ccp s
               , ccp e )->ccp{
-            auto esub = cp( strchr( p, '>' ));
+            auto esub = cp( strchr( p, '"' ));
             if( !esub )
               return nullptr;
             string subs;
