@@ -686,10 +686,9 @@ using namespace gfc;
 
         cp String::skip_ws( ccp in ){
           e_sanity_check( !e_isbad( in ));
-          cp s = cp( in );
-          while(( *s <= ' ' )&&( *s != 13 )&&( *s != 10 )){
+          auto s = cp( in );
+          while(( *s <= ' ' )&&( *s != 13 )&&( *s != 10 ))
             ++s;
-          }
           return s;
         }
 
@@ -2046,36 +2045,34 @@ using namespace gfc;
       }
 
       string& String::cat( ccp s, ccp e ){
-
-        //----------------------------------------------------------------------
-        // Validation and sanity checks for the good of ya soul.
-        //----------------------------------------------------------------------
-
-        if( !s || !*s ){
+        if( !s || !*s )
+          return *this;
+        if( !e ){
+          #if e_compiling( sanity )
+            e_msg( "ERROR VNil end point for string::cat()." );
+          #endif
           return *this;
         }
-        e_sanity_check( !e_isbad( s ));
-        e_sanity_check( !e_isbad( e ));
-        e_assert( s <= e, "Bad ptr!" );
-
-        //----------------------------------------------------------------------
-        // Apend input string between s and e inclusive.
-        //----------------------------------------------------------------------
-
-        return cat( s, e-s );
+        if( s >= e ){
+          #if e_compiling( sanity )
+            e_msg( "ERROR Bad string start/end points." );
+          #endif
+          return *this;
+        }
+        return cat( s
+          , e-s
+        );
       }
 
       string& String::cat( const string& s ){
-        if( !s.empty() ){
+        if( !s.empty() )
           cat( s.c_str(), s.len() );
-        }
         return *this;
       }
 
       string& String::cat( ccp pChars ){
-        if( pChars && *pChars ){
+        if( pChars && *pChars )
           cat( pChars, strlen( pChars ));
-        }
         return *this;
       }
 
