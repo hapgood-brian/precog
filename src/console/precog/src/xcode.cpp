@@ -3073,7 +3073,7 @@ using namespace fs;
                 }
               );
               fs << "      );\n";
-              fs << "      name = Resources;\n";
+              fs << "      name = resources;\n";
               fs << "      sourceTree = \"<group>\";\n";
               fs << "    };\n";
             }
