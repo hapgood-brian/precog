@@ -3439,7 +3439,7 @@ using namespace fs;
                   fs << "        ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;\n";
                   if( !inSources( Type::kPlist ).empty() )
                     fs << "        INFOPLIST_FILE = \"$(SRCROOT)/../" + inSources( Type::kPlist )[ 0 ] + "\";\n";
-                  fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"SisuXD\";\n";
+                  fs << "        INFOPLIST_KEY_CFBundleDisplayName = \"" << toLabel() << "\";\n";
                   fs << "        INFOPLIST_KEY_LSApplicationCategoryType = \"public.app-category.graphics-design\";\n";
                   fs << "        PRODUCT_BUNDLE_IDENTIFIER = \"" + m_sProductBundleId.tolower() + "\";\n";
                   fs << "        PRODUCT_NAME = \"$(TARGET_NAME)\";\n";
